@@ -1,5 +1,5 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
+\project_{name, salary, dept}  (\select_{employee.name = manages.manage});
 # dependencies
 /node_modules
 /.pnp
