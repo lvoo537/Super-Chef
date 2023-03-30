@@ -26,9 +26,6 @@ function LoginPage() {
     return (
         <Grid container spacing={2} sx={{ textAlign: 'center' }}>
             <Grid item xs={12}>
-                <Container>
-                    <Typography variant="h1">Login Page</Typography>
-                </Container>
                 <ThemeProvider theme={theme}>
                     <Container component="main" maxWidth="xs">
                         <CssBaseline />
@@ -80,14 +77,14 @@ function LoginPage() {
                                     Sign In
                                 </Button>
                                 <Grid container>
-                                    <Grid item xs>
+                                    <Grid item sx={{ margin: 'auto' }}>
                                         <Link href="#" variant="body2">
                                             Forgot password?
                                         </Link>
                                     </Grid>
-                                    <Grid item>
+                                    <Grid item sx={{ margin: 'auto' }}>
                                         <Link href="#" variant="body2">
-                                            {"Don't have an account? Sign Up"}
+                                            Don't have an account? Sign Up
                                         </Link>
                                     </Grid>
                                 </Grid>
