@@ -10,6 +10,7 @@ import Link from '@mui/material/Link';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Navbar from '../../components/Navbar/Navbar';
 
 const theme = createTheme();
 
@@ -26,6 +27,9 @@ function LoginPage() {
     return (
         <Grid container spacing={2} sx={{ textAlign: 'center' }}>
             <Grid item xs={12}>
+                <Navbar></Navbar>
+            </Grid>
+            <Grid item xs={12}>
                 <ThemeProvider theme={theme}>
                     <Container component="main" maxWidth="xs">
                         <CssBaseline />
@@ -37,7 +41,7 @@ function LoginPage() {
                                 alignItems: 'center'
                             }}
                         >
-                            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                            <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
                                 <LockOutlinedIcon />
                             </Avatar>
                             <Typography component="h1" variant="h5">
