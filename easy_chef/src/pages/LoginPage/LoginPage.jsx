@@ -11,17 +11,54 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Navbar from '../../components/Navbar/Navbar';
+import { useAuthContext } from '../../contexts/Auth/AuthContext';
+import axios from 'axios';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const theme = createTheme();
 
 function LoginPage() {
+    const navigate = useNavigate();
+
+    const { setAuthenticated, setUid } = useAuthContext();
+
+    // state for TextField error handling
+    const [formError, setFormError] = useState({
+        errorOccurred: false,
+        errorMsg: ''
+    });
+
     const handleSubmit = (event) => {
         event.preventDefault();
+
+        // get the email and password values on text-fields (form)
         const data = new FormData(event.currentTarget);
-        console.log({
+        const dataToSend = {
             email: data.get('email'),
             password: data.get('password')
-        });
+        };
+
+        // hit backend endpoint and redirect to home on success.
+        // otherwise, set text-field error messages appropriately.
+        axios
+            .create({
+                baseURL: '/api',
+                headers: { 'Content-Type': 'application/json' },
+                withCredentials: true
+            })
+            .post('/accounts/login', dataToSend)
+            .then((response) => {
+                setAuthenticated(true);
+                // assuming uid is returned from data
+                setUid(response.data);
+                navigate('/');
+            })
+            .catch((error) => {
+                if (error.response.status === 401) {
+                    setFormError({ errorOccurred: true, errorMsg: error.response.data });
+                }
+            });
     };
 
     return (
@@ -57,6 +94,8 @@ function LoginPage() {
                                     name="email"
                                     autoComplete="email"
                                     autoFocus
+                                    error={formError.errorOccurred}
+                                    helperText={formError.errorMsg}
                                 />
                                 <TextField
                                     margin="normal"
@@ -67,6 +106,8 @@ function LoginPage() {
                                     type="password"
                                     id="password"
                                     autoComplete="current-password"
+                                    error={formError.errorOccurred}
+                                    helperText={formError.errorMsg}
                                 />
                                 <FormControlLabel
                                     control={<Checkbox value="remember" color="primary" />}
