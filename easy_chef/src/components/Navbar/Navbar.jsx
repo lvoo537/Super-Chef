@@ -124,7 +124,7 @@ function ResponsiveAppBar() {
                     </Box>
 
                     <Box sx={{ flexGrow: 0.04 }}>
-                        <IconButton aria-label="search" style={{ color: '#fff' }} href="#">
+                        <IconButton aria-label="search" style={{ color: '#fff' }} href="/">
                             <SearchIcon />
                         </IconButton>
                     </Box>
