@@ -34,9 +34,8 @@ class MyUserSerializer(serializers.ModelSerializer):
 
         if MyUser.objects.filter(username=data['username']).exists():
             existing_user = MyUser.objects.get(username=data['username'])
-            if existing_user.check_password(data['password']):
-                errors[
-                    'username'] = "A user with that username and password already exists"
+            if existing_user.check_password(data['password']): # if the password is correct
+                errors['username'] = "A user with that username and password already exists"
 
         if MyUser.objects.filter(email=data['email']).exists():
             errors['email'] = "A user with that email already exists"

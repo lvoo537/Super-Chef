@@ -43,7 +43,7 @@ class LogoutView(APIView):
 
 class EditProfileView(APIView):
 
-    def post(self, request, pk):
+    def post(self, request):
         errors = {}
         data = request.data
         # get the user from the token
@@ -53,21 +53,27 @@ class EditProfileView(APIView):
         validated_token = hello.get_validated_token(raw_token)
         un = hello.get_user(validated_token)
         if un is None:
-            errors['user'] = 'User not found'
+            errors['user'] = 'This user does not exist'
             return Response(errors, status=400)
-        
 
-        print(un)
-
-        # print(request.user.username)
         try:
-            user = MyUser.objects.get(id=pk)
+            user = MyUser.objects.get(username=un)
         except MyUser.DoesNotExist:
             errors["user_id"] = "This user does not exist"
             return Response(errors, status=400)
 
         if request.data.get("username", ""):
-            user.username = request.data.get("username")
+            temp_username = request.data.get("username")
+            if MyUser.objects.filter(username=temp_username).exists():
+                existing_user = MyUser.objects.get(username=temp_username)
+                if user.username != existing_user.username:
+
+                    errors['username'] = "A user with that username already exists"
+                else:
+                    user.username = temp_username
+            else:
+                user.username = temp_username
+
         if request.data.get("email", ""):
             email = request.data.get("email")
             validator = EmailValidator()

@@ -8,6 +8,7 @@ class MyUser(AbstractUser):
     """
     Custom User Model
     """
+
     avatar_img = models.ImageField(upload_to='uploads/', null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
