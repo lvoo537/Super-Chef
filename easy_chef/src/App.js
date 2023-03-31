@@ -4,6 +4,7 @@ import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import ExampleComponent from './components/ExampleComponent/ExampleComponent';
 import LoginPage from './pages/LoginPage/LoginPage';
+import MainPage from './pages/MainPage/MainPage';
 
 function App() {
     function HomePageComponent() {
@@ -32,7 +33,7 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<HomePageComponent />} />
+                <Route path="/" element={<MainPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<HomePageComponent />} />
                 <Route path="/accounts/edit-profile" element={<HomePageComponent />} />
