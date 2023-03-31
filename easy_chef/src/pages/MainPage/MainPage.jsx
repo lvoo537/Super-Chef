@@ -7,6 +7,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Grid } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
 import Box from '@mui/material/Box';
+import RecipeCard from '../../components/RecipeCard/RecipeCard';
 
 function CustomizedInputBase() {
     return (
@@ -39,6 +40,13 @@ function MainPage() {
                 <Box display="flex" justifyContent="center" alignItems="center" minHeight="18vh">
                     <CustomizedInputBase />
                 </Box>
+            </Grid>
+            <Grid>
+                <RecipeCard
+                    recipeName="Example Recipe"
+                    recipeDescription="Recipe description"
+                    recipeImg="https://source.unsplash.com/random"
+                />
             </Grid>
         </Grid>
     );
