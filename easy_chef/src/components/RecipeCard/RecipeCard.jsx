@@ -13,7 +13,7 @@ export default function RecipeCard({ recipeImg, recipeName, recipeDescription })
     }
 
     return (
-        <Card sx={{ width: 345 }}>
+        <Card sx={{ width: 345 }} margin="auto">
             <CardActionArea>
                 <CardMedia
                     component="img"
