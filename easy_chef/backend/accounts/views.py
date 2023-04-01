@@ -1,6 +1,7 @@
 from django.core.validators import EmailValidator
 from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.hashers import check_password
@@ -33,7 +34,7 @@ class RegisterView(generics.GenericAPIView):
 
 
 class LogoutView(APIView):
-    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         # delete the user's token to log them out
@@ -42,16 +43,18 @@ class LogoutView(APIView):
 
 
 class EditProfileView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         errors = {}
         data = request.data
         # get the user from the token
-        hello = JWTAuthentication()
-        header = hello.get_header(request)
-        raw_token = hello.get_raw_token(header)
-        validated_token = hello.get_validated_token(raw_token)
-        un = hello.get_user(validated_token)
+        un = request.user
+
+
+
+
+
         if un is None:
             errors['user'] = 'This user does not exist'
             return Response(errors, status=400)
@@ -67,7 +70,6 @@ class EditProfileView(APIView):
             if MyUser.objects.filter(username=temp_username).exists():
                 existing_user = MyUser.objects.get(username=temp_username)
                 if user.username != existing_user.username:
-
                     errors['username'] = "A user with that username already exists"
                 else:
                     user.username = temp_username
@@ -136,12 +138,26 @@ class EditProfileView(APIView):
 
 
 class EditAvatar(APIView):
-    def post(self, request, pk):
-        errors = {}
-        data = request.data
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+
+        errors = {}
+        # data = request.data
+        # get the user from the token
+
+        hello = JWTAuthentication()
+        header = hello.get_header(request)
+        raw_token = hello.get_raw_token(header)
+        validated_token = hello.get_validated_token(raw_token)
+        un = hello.get_user(validated_token)
+
+        if un is None:
+            errors['user'] = 'This user does not exist'
+            return Response(errors, status=400)
         try:
-            user = MyUser.objects.get(id=pk)
+            user = MyUser.objects.get(username=un)
+
         except MyUser.DoesNotExist:
             errors["user_id"] = "This user does not exist"
             return Response(errors, status=400)

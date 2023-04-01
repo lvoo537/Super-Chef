@@ -1,5 +1,6 @@
 from django.http import *
 from django.shortcuts import *
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import *
 from rest_framework.generics import *
 from rest_framework.views import *
@@ -7,7 +8,6 @@ from rest_framework import status
 from accounts.models import MyUser
 from recipes.serializers import *
 from recipes.models import *
-
 
 from django.shortcuts import render
 from django.utils.datastructures import MultiValueDict
@@ -73,7 +73,9 @@ class RecipeFileUpdate(APIView):
         response_data = {'Success message': 'Uploaded the files successfully.'}
         return Response(response_data, status=201)
 
+
 class UpdateRecipe(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, recipe_id):
         try:
@@ -81,6 +83,8 @@ class UpdateRecipe(APIView):
         except Recipe.DoesNotExist:
             return Response({'recipe_id': 'Recipe does not exist.'}, status=404)
         errors = {}
+        if recipe.owner != request.user:
+            return Response({'recipe_id': 'Recipe does not belong to user.'}, status=403)
 
         is_there_a_base_recipe = False
         base_recipe_name = request.data.get('base_recipe', '')
@@ -100,7 +104,7 @@ class UpdateRecipe(APIView):
         if request.data['prep_time']:
             prep_time = timedelta(minutes=request.data['prep_time'])
             request.data['prep_time'] = prep_time
-        recipe_serializer = RecipeSerializer(recipe,data=request.data)
+        recipe_serializer = RecipeSerializer(recipe, data=request.data)
 
         # Create Cuisine Serializers
         cuisine_serializers = []
@@ -228,12 +232,13 @@ class UpdateRecipe(APIView):
 
 
 class CreateView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         errors = {}
 
         is_there_a_base_recipe = False
-        base_recipe_name = request.data.get('base_recipe','')
+        base_recipe_name = request.data.get('base_recipe', '')
         if base_recipe_name:
             # Find the base recipe in the database by its name
             try:
@@ -243,7 +248,6 @@ class CreateView(APIView):
                 # Base recipe does not exist in the database
                 errors['base_recipe'] = 'Base recipe does not exist'
 
-
         # Create Recipe Serializer
         if request.data['cooking_time']:
             cooking_time = timedelta(minutes=request.data['cooking_time'])
@@ -251,7 +255,9 @@ class CreateView(APIView):
         if request.data['prep_time']:
             prep_time = timedelta(minutes=request.data['prep_time'])
             request.data['prep_time'] = prep_time
+
         recipe_serializer = RecipeSerializer(data=request.data)
+
         if recipe_serializer.is_valid():
             recipe = recipe_serializer.save()
         else:
@@ -288,7 +294,7 @@ class CreateView(APIView):
                 for field, error_list in diet_serializer.errors.items():
                     for error in error_list:
                         errors['diets'].setdefault(diet['name'], {}).setdefault(field,
-                                                                        []).append(
+                                                                                []).append(
                             error)
 
         # Create Ingredient Serializers
@@ -350,8 +356,6 @@ class CreateView(APIView):
         for instruction_serializer in instruction_serializers:
             instruction_objs.append(instruction_serializer.save(recipe=recipe))
 
-
-
         # Attach related objects to Recipe
         # recipe.cuisine.set(cuisine_objs)
         for obj in cuisine_objs:
@@ -399,6 +403,7 @@ class RecipeFileUpload(APIView):
         response_data = {'Success message': 'Uploaded the files successfully.'}
         return Response(response_data, status=201)
 
+
 class InstructionFileUpload(APIView):
     def post(self, request, instruction_id):
         # recipe_id = self.kwargs['recipe_id']
@@ -423,6 +428,7 @@ class InstructionFileUpload(APIView):
         response_data = {'Success message': 'Uploaded the file successfully.'}
         return Response(response_data, status=201)
 
+
 class IngredientSearchView(View):
     """
     This view is used to search for ingredients.
@@ -431,6 +437,7 @@ class IngredientSearchView(View):
         - recipe_name
     Returns: List of ingredients that match the keyword
     """
+
     def get(self, request):
         recipe_name = request.GET.get('recipe_name', None)
         if recipe_name is None:
@@ -451,7 +458,7 @@ class DeleteRecipe(APIView):
         except Recipe.DoesNotExist:
             return Response({'error': 'Recipe not found.'}, status=404)
         recipe.delete()
-        return Response({'success message': 'Recipe was deleted from the database'},status=204)
+        return Response({'success message': 'Recipe was deleted from the database'}, status=204)
 
 
 class RecipeDetails(APIView):
