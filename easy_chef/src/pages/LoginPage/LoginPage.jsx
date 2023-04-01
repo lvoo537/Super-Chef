@@ -12,9 +12,9 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Navbar from '../../components/Navbar/Navbar';
 import { useAuthContext } from '../../contexts/Auth/AuthContext';
-import axios from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import fetchBackend from '../../Utils/fetchBackend';
 
 const theme = createTheme();
 
@@ -41,12 +41,7 @@ function LoginPage() {
 
         // hit backend endpoint and redirect to home on success.
         // otherwise, set text-field error messages appropriately.
-        axios
-            .create({
-                baseURL: '/api',
-                headers: { 'Content-Type': 'application/json' },
-                withCredentials: true
-            })
+        fetchBackend
             .post('/accounts/login', dataToSend)
             .then((response) => {
                 setAuthenticated(true);
