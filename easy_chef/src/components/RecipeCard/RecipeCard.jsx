@@ -12,9 +12,17 @@ export default function RecipeCard({ recipeImg, recipeName, recipeDescription })
         recipeDescShortened = recipeDescription.substring(0, 199);
     }
 
+    // Call backend API to get recipe details given the recipe name (or id ?).
+    // Create frontend page for recipe details page for each recipe.
+    // Set the window.location.href to the url of the frontend page of given recipe name.
+
     return (
         <Card sx={{ width: 345 }} margin="auto">
-            <CardActionArea>
+            <CardActionArea
+                onClick={() => {
+                    window.location.href = '#';
+                }}
+            >
                 <CardMedia
                     component="img"
                     height="140"
