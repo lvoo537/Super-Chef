@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import ExampleComponent from './components/ExampleComponent/ExampleComponent';
 import LoginPage from './pages/LoginPage/LoginPage';
 import MainPage from './pages/MainPage/MainPage';
+import CreateRecipe from './pages/CreateRecipe/CreateRecipe';
 
 function App() {
     function HomePageComponent() {
@@ -38,7 +39,7 @@ function App() {
                 <Route path="/register" element={<HomePageComponent />} />
                 <Route path="/accounts/edit-profile" element={<HomePageComponent />} />
                 <Route path="/accounts/my-recipe" element={<HomePageComponent />} />
-                <Route path="/recipes/create-recipe" element={<HomePageComponent />} />
+                <Route path="/recipes/create-recipe" element={<CreateRecipe />} />
                 <Route path="/recipes/edit-recipe/:recipeId" element={<HomePageComponent />} />
                 <Route path="/recipes/recipe-details/:recipeId" element={<HomePageComponent />} />
                 <Route path="/shopping-cart" element={<HomePageComponent />} />
