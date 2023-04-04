@@ -464,21 +464,46 @@ class DeleteRecipe(APIView):
 class RecipeDetails(APIView):
     """
     This view is used to get the details of a recipe.
-    GET /recipes/recipe-details/
-    Payloads:
-        - recipe_name
+    GET /recipes/recipe-details/<int:recipe_id>/
     Returns: Recipe details as specified in model
     """
 
-    def get(self, request):
-        recipe_name = request.GET.get('recipe_name', None)
-        if recipe_name is None:
-            return Response({'error': 'Recipe name is required'}, status=status.HTTP_400_BAD_REQUEST)
-        recipe = Recipe.objects.filter(name=recipe_name)
-        if len(recipe) == 0:
-            return Response({'error': 'Recipe not found'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = RecipeSerializer(recipe[0])
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request,recipe_id):
+        # recipe_name = request.GET.get('recipe_name', None)
+        # if recipe_name is None:
+        #     return Response({'error': 'Recipe name is required'}, status=status.HTTP_400_BAD_REQUEST)
+        # recipe = Recipe.objects.filter(name=recipe_name)
+        # if len(recipe) == 0:
+        #     return Response({'error': 'Recipe not found'}, status=status.HTTP_404_NOT_FOUND)
+        # serializer = RecipeSerializer(recipe[0])
+        # return Response(serializer.data, status=status.HTTP_200_OK)
+        return_data ={}
+        try:
+            recipe = Recipe.objects.get(id=recipe_id)
+        except Recipe.DoesNotExist:
+            return Response({'error': 'Recipe not found'}, status=404)
+
+        recipe_serializer = RecipeSerializer(recipe)
+        return_data = recipe_serializer.data
+        instructions = Instruction.objects.filter(recipe=recipe_id).order_by('step_number')
+        instruction_serializer = InstructionSerializer(instructions,many=True)
+        comments = Comment.objects.filter(recipe=recipe_id)
+        comment_serializer = CommentSerializer(comments,many=True)
+        diets = Diet.objects.filter(recipes=recipe_id)
+        diet_serializer = DietSerializer(diets,many=True)
+        cuisines = Cuisine.objects.filter(recipes=recipe_id)
+        cuisine_serializer = CuisineSerializer(cuisines,many=True)
+        ingredients = Ingredient.objects.filter(recipes=recipe_id)
+        ingredient_serializer= IngredientSerializer(ingredients,many=True)
+        return_data["ingredients"] = ingredient_serializer.data
+        return_data["cuisines"] = cuisine_serializer.data
+        return_data["diets"] = diet_serializer.data
+        return_data["instructions"] =instruction_serializer.data
+        return_data["comments"] = comment_serializer.data
+
+        return Response(return_data, status=200)
+
+
 
 
 class ShoppingList(View):
