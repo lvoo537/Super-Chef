@@ -253,9 +253,7 @@ class CommentFileUploadView(APIView):
             return Response({'comment_id': 'Comment does not exist.'}, status=404)
 
         files = request.FILES
-        print(request)
         if files:
-            print(request)
             file_dict = MultiValueDict(files)
             for file_key in file_dict.keys():
                 file_list = file_dict.getlist(file_key)
