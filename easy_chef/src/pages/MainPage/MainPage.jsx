@@ -68,7 +68,7 @@ function MainPage() {
                         }}
                     >
                         <FormControlLabel value="favorites" control={<Radio />} label="Favorites" />
-                        <FormControlLabel value="likes" control={<Radio />} label="Likes" />
+                        <FormControlLabel value="rating" control={<Radio />} label="Rating" />
                     </RadioGroup>
                 </FormControl>
                 <Grid
