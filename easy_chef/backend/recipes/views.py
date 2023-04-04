@@ -5,7 +5,7 @@ from rest_framework.permissions import *
 from rest_framework.generics import *
 from rest_framework.views import *
 from rest_framework import status
-from accounts.models import MyUser
+from accounts.models import MyUser, ShoppingList
 from recipes.serializers import *
 from recipes.models import *
 
@@ -504,9 +504,60 @@ class RecipeDetails(APIView):
         return Response(return_data, status=200)
 
 
+class RetrieveCommentFilesView(APIView):
+    def get(self, request, comment_id):
+        comment_files = CommentFile.objects.filter(comment=comment_id)
+        files = []
+        for comment_file in comment_files:
+            file_path = comment_file.file.path
+            file = open(file_path, 'rb')
+            files.append(file)
+
+        response = FileResponse(files)
+        return response
 
 
-class ShoppingList(View):
+class RetrieveRecipeFilesView(APIView):
+    def get(self, request, recipe_id):
+        recipe_files = RecipeFile.objects.filter(recipe=recipe_id)
+        files = []
+        for recipe_file in recipe_files:
+            file_path = recipe_file.file.path
+            file = open(file_path, 'rb')
+            files.append(file)
+
+        response = FileResponse(files)
+        return response
+
+
+class RetrieveInstructionFilesView(APIView):
+    def get(self, request, instruction_id):
+        instruction_files = InstructionFile.objects.filter(recipe=instruction_id)
+        files = []
+        for instruction_file in instruction_files:
+            file_path = instruction_file.file.path
+            file = open(file_path, 'rb')
+            files.append(file)
+
+        response = FileResponse(files)
+        return response
+
+
+class AddToCartView(APIView):
+    def post(self, request, recipe_id):
+        user = request.user
+        try:
+            recipe = Recipe.objects.get(id=recipe_id)
+        except Recipe.DoesNotExist:
+            return Response(
+                {'Error': f'Recipe with id {recipe_id} does not exist'},
+                status=400)
+        shopping_list = ShoppingList.objects.get(user=user)
+        shopping_list.recipes.add(recipe)
+        return Response({"message": "Successfully added recipe to the shopping list."}, status=201)
+
+
+class ShoppingLists(View):
     """
     This view is used to get the shopping list of a recipe.
     GET /recipes/shopping-list/

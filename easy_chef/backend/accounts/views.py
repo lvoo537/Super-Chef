@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.hashers import check_password
-from accounts.models import MyUser
+from accounts.models import MyUser, ShoppingList
 from accounts.serializers import MyUserSerializer
 import re
 import datetime
@@ -20,6 +20,8 @@ class RegisterView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             self.perform_create(serializer)
+            user = serializer.instance
+            shopping_list = ShoppingList.objects.create(user=user)
             return Response(serializer.data, status=201)
         else:
             return Response(serializer.errors, status=400)
