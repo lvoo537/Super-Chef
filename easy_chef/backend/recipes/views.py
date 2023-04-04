@@ -557,6 +557,10 @@ class AddToCartView(APIView):
         shopping_list.save()
         return Response({"message": "Successfully added recipe to the shopping list."}, status=201)
 
+class ReturnAllRecipes(ListAPIView):
+    serializer_class = RecipeSerializer
+    def get_queryset(self):
+        return Recipe.objects.all()
 
 class ShoppingLists(View):
     """
