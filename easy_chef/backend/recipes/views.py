@@ -6,6 +6,7 @@ from rest_framework.generics import *
 from rest_framework.views import *
 from rest_framework import status
 from accounts.models import MyUser
+from accounts.views import IsTokenValid
 from recipes.serializers import *
 from recipes.models import *
 
@@ -29,12 +30,17 @@ from recipes.serializers import CuisineSerializer, DietSerializer, \
 # Create your views here.
 
 class InstructionFileUpdate(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
     def post(self, request, instruction_id):
         # recipe_id = self.kwargs['recipe_id']
         try:
             instruction = Instruction.objects.get(id=instruction_id)
         except Instruction.DoesNotExist:
             return Response({'instruction_id': 'instruction does not exist.'}, status=404)
+
+        if instruction.recipe.owner != request.user:
+            return Response({'instruction_id': 'instruction does not belong to user.'}, status=403)
 
         instruction.photos_or_videos.all().delete()
         files = request.FILES
@@ -51,12 +57,17 @@ class InstructionFileUpdate(APIView):
 
 
 class RecipeFileUpdate(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
     def post(self, request, recipe_id):
         # recipe_id = self.kwargs['recipe_id']
         try:
             recipe = Recipe.objects.get(id=recipe_id)
         except Recipe.DoesNotExist:
             return Response({'recipe_id': 'Recipe does not exist.'}, status=404)
+        if recipe.owner != request.user:
+            return Response({'recipe_id': 'Recipe does not belong to user.'}, status=403)
+
         recipe.photos_or_videos.all().delete()
         files = request.FILES
         if files:
@@ -75,7 +86,7 @@ class RecipeFileUpdate(APIView):
 
 
 class UpdateRecipe(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request, recipe_id):
         try:
@@ -83,6 +94,7 @@ class UpdateRecipe(APIView):
         except Recipe.DoesNotExist:
             return Response({'recipe_id': 'Recipe does not exist.'}, status=404)
         errors = {}
+
         if recipe.owner != request.user:
             return Response({'recipe_id': 'Recipe does not belong to user.'}, status=403)
 
@@ -232,7 +244,7 @@ class UpdateRecipe(APIView):
 
 
 class CreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request):
         errors = {}
@@ -376,6 +388,8 @@ class CreateView(APIView):
 
 
 class RecipeFileUpload(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
     def post(self, request, recipe_id):
         # recipe_id = self.kwargs['recipe_id']
         try:
@@ -405,6 +419,8 @@ class RecipeFileUpload(APIView):
 
 
 class InstructionFileUpload(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
     def post(self, request, instruction_id):
         # recipe_id = self.kwargs['recipe_id']
         try:
@@ -451,12 +467,19 @@ class IngredientSearchView(View):
 
 
 class DeleteRecipe(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
     def delete(self, request):
+
         recipe_id = request.data.get('recipe_id', '')
         try:
             recipe = Recipe.objects.get(id=recipe_id)
         except Recipe.DoesNotExist:
             return Response({'error': 'Recipe not found.'}, status=404)
+
+        if recipe.owner != request.user:
+            return Response({'recipe_id': 'Recipe does not belong to user.'}, status=403)
+
         recipe.delete()
         return Response({'success message': 'Recipe was deleted from the database'}, status=204)
 
@@ -492,11 +515,14 @@ class ShoppingList(View):
     Note:
         The user must be logged in to use this view.
     """
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def get(self, request):
-        username = request.GET.get('username', None)
-        if username is None:
-            return HttpResponseBadRequest("Username is required")
+        # username = request.GET.get('username', None)
+        # if username is None:
+        #     return HttpResponseBadRequest("Username is required")
+        print(request.user)
+
         if not request.user.is_authenticated:
             return HttpResponseForbidden("You must be logged in to use this view")
         user = MyUser.objects.filter(username=username)
@@ -533,7 +559,7 @@ class UpdateRecipeServings(APIView):
         The user must be logged in to use this view.
     """
     serializer_class = RecipeSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def get_queryset(self):
         recipe_name = self.request.GET.get('recipe_name', None)
