@@ -18,7 +18,11 @@ const pages = [
     ['My Recipes', '/accounts/my-recipe'],
     ['New Recipe', '/recipes/create-recipe']
 ];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = [
+    ['Edit Profile', '/accounts/edit-profile'],
+    ['View Profile', '/accounts/view-profile'],
+    ['Logout', '/accounts/logout']
+];
 
 function Navbar() {
     const navigate = useNavigate();
@@ -136,8 +140,13 @@ function Navbar() {
                             onClose={handleCloseUserMenu}
                         >
                             {settings.map((setting) => (
-                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography textAlign="center">{setting}</Typography>
+                                <MenuItem
+                                    key={setting[0]}
+                                    onClick={(event) => {
+                                        navigate(setting[1]);
+                                    }}
+                                >
+                                    <Typography textAlign="center">{setting[0]}</Typography>
                                 </MenuItem>
                             ))}
                         </Menu>
