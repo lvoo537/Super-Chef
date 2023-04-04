@@ -9,6 +9,11 @@ import CreateRecipe from './pages/CreateRecipe/CreateRecipe';
 import EditProfile from './pages/EditProfile/EditProfile';
 import ViewProfile from './pages/ViewProfile/ViewProfile';
 import LogoutPage from './pages/LogoutPage/LogoutPage';
+import MyRecipes from './pages/MyRecipes/MyRecipes';
+import EditRecipe from './pages/EditRecipe/EditRecipe';
+import RecipeDetailsPage from './pages/RecipeDetailsPage/RecipeDetailsPage';
+import ShoppingCart from './pages/ShoppingCart/ShoppingCart';
+import RegisterPage from './pages/RegisterPage/RegisterPage';
 
 function App() {
     function HomePageComponent() {
@@ -39,15 +44,15 @@ function App() {
             <Routes>
                 <Route path="/" element={<MainPage />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<HomePageComponent />} />
+                <Route path="/register" element={<RegisterPage />} />
                 <Route path="/accounts/view-profile" element={<ViewProfile />} />
                 <Route path="/accounts/edit-profile" element={<EditProfile />} />
                 <Route path="/accounts/logout" element={<LogoutPage />} />
-                <Route path="/accounts/my-recipe" element={<HomePageComponent />} />
+                <Route path="/accounts/my-recipe" element={<MyRecipes />} />
                 <Route path="/recipes/create-recipe" element={<CreateRecipe />} />
-                <Route path="/recipes/edit-recipe/:recipeId" element={<HomePageComponent />} />
-                <Route path="/recipes/recipe-details/:recipeId" element={<HomePageComponent />} />
-                <Route path="/shopping-cart" element={<HomePageComponent />} />
+                <Route path="/recipes/edit-recipe/:recipeId" element={<EditRecipe />} />
+                <Route path="/recipes/recipe-details/:recipeId" element={<RecipeDetailsPage />} />
+                <Route path="/shopping-cart" element={<ShoppingCart />} />
             </Routes>
         </BrowserRouter>
     );
