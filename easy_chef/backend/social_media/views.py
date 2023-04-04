@@ -201,6 +201,7 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
+
 class PopularRecipeView(ListAPIView):
     serializer_class = RecipeSerializer
     pagination_class = StandardResultsSetPagination

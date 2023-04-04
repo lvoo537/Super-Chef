@@ -5,7 +5,7 @@ from rest_framework.permissions import *
 from rest_framework.generics import *
 from rest_framework.views import *
 from rest_framework import status
-from accounts.models import MyUser
+from accounts.models import MyUser, ShoppingList
 from accounts.views import IsTokenValid
 from recipes.serializers import *
 from recipes.models import *
@@ -396,11 +396,12 @@ class RecipeFileUpload(APIView):
             recipe = Recipe.objects.get(id=recipe_id)
         except Recipe.DoesNotExist:
             return Response({'recipe_id': 'Recipe does not exist.'}, status=404)
+        if recipe.owner != request.user:
+            return Response({'user': 'You are not the owner of this recipe.'}, status=403)
         # recipe.photos_or_videos.all().delete()
         files = request.FILES
-        print(request)
         if files:
-            print(request)
+
             file_dict = MultiValueDict(files)
             for file_key in file_dict.keys():
                 file_list = file_dict.getlist(file_key)
@@ -427,6 +428,8 @@ class InstructionFileUpload(APIView):
             instruction = Instruction.objects.get(id=instruction_id)
         except Instruction.DoesNotExist:
             return Response({'instruction_id': 'instruction does not exist.'}, status=404)
+        if instruction.recipe.owner != request.user:
+            return Response({'user': 'You are not the owner of this recipe.'}, status=403)
         # file = request.FILES['file']
         # name = file.name
         # instruction_file = InstructionFile.objects.create(name=name, recipe=instruction, file=file)
@@ -504,7 +507,7 @@ class RecipeDetails(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ShoppingList(View):
+class ShoppingLists(APIView):
     """
     This view is used to get the shopping list of a recipe.
     GET /recipes/shopping-list/
@@ -518,31 +521,33 @@ class ShoppingList(View):
     permission_classes = [IsAuthenticated, IsTokenValid]
 
     def get(self, request):
-        # username = request.GET.get('username', None)
-        # if username is None:
-        #     return HttpResponseBadRequest("Username is required")
-        print(request.user)
 
-        if not request.user.is_authenticated:
-            return HttpResponseForbidden("You must be logged in to use this view")
-        user = MyUser.objects.filter(username=username)
+        user = request.user
+
         if user is None:
             return HttpResponseBadRequest("User not found")
-        shopping_list = ShoppingList.objects.filter(user=user[0])
+
+        try:
+            shopping_list = ShoppingList.objects.get(user=user)
+        except ShoppingList.DoesNotExist:
+            return HttpResponseBadRequest("Shopping list not found", status=404)
+
         if shopping_list is None:
             return HttpResponseBadRequest("Shopping list not found")
-        recipes = shopping_list[0].recipes.all()
+        recipes = shopping_list.recipes.all()
         if recipes is None:
             return HttpResponseBadRequest("List of recipes are required")
-        result_json = {}
+        result_json = {'id': []}
+
         for recipe in recipes:
-            result_json[recipe.name] = {}
-            for ingredient in recipe.ingredients.all():
-                result_json[recipe.name][ingredient.name] = {
-                    'amount': ingredient.quantity,
-                    'unit_of_measure': ingredient.unit_of_measure
-                }
-            result_json[recipe.name]['servings'] = recipe.servings
+            result_json['id'].append(recipe.id)
+            # result_json[recipe.name] = {}
+            # for ingredient in recipe.ingredients.all():
+            #     result_json[recipe.name][ingredient.name] = {
+            #         'amount': ingredient.quantity,
+            #         'unit_of_measure': ingredient.unit_of_measure
+            #     }
+            # result_json[recipe.name]['servings'] = recipe.servings
         return JsonResponse(result_json, status=200)
 
 

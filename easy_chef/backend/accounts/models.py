@@ -25,6 +25,7 @@ class ShoppingList(models.Model):
     recipes = models.ManyToManyField(Recipe, related_name='shopping_lists', null=True, blank=True)
 
 
+
 class BlackListedToken(models.Model):
     token = models.CharField(max_length=500)
     user = models.ForeignKey(MyUser, related_name="token_user", on_delete=models.CASCADE)
