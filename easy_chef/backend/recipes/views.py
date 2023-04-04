@@ -554,6 +554,7 @@ class AddToCartView(APIView):
                 status=400)
         shopping_list = ShoppingList.objects.get(user=user)
         shopping_list.recipes.add(recipe)
+        shopping_list.save()
         return Response({"message": "Successfully added recipe to the shopping list."}, status=201)
 
 
