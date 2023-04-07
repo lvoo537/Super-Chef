@@ -10,25 +10,58 @@ import Link from '@mui/material/Link';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Navbar from '../../components/Navbar/Navbar';
+import { useAuthContext } from '../../contexts/Auth/AuthContext';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import fetchBackend from '../../Utils/fetchBackend';
 
 const theme = createTheme();
 
 function LoginPage() {
+    const navigate = useNavigate();
+
+    const { setAuthenticated, setUid } = useAuthContext();
+
+    // state for TextField error handling
+    const [formError, setFormError] = useState({
+        errorOccurred: false,
+        errorMsg: ''
+    });
+
     const handleSubmit = (event) => {
         event.preventDefault();
+
+        // get the email and password values on text-fields (form)
         const data = new FormData(event.currentTarget);
-        console.log({
+        const dataToSend = {
             email: data.get('email'),
             password: data.get('password')
-        });
+        };
+
+        // hit backend endpoint and redirect to home on success.
+        // otherwise, set text-field error messages appropriately.
+        fetchBackend
+            .post('/accounts/login', dataToSend)
+            .then((response) => {
+                setAuthenticated(true);
+                // assuming uid is returned from data
+                setUid(response.data);
+                navigate('/');
+            })
+            .catch((error) => {
+                if (error.response.status === 401) {
+                    setFormError({ errorOccurred: true, errorMsg: error.response.data });
+                }
+            });
     };
 
     return (
         <Grid container spacing={2} sx={{ textAlign: 'center' }}>
             <Grid item xs={12}>
-                <Container>
-                    <Typography variant="h1">Login Page</Typography>
-                </Container>
+                <Navbar></Navbar>
+            </Grid>
+            <Grid item xs={12}>
                 <ThemeProvider theme={theme}>
                     <Container component="main" maxWidth="xs">
                         <CssBaseline />
@@ -40,7 +73,7 @@ function LoginPage() {
                                 alignItems: 'center'
                             }}
                         >
-                            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                            <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
                                 <LockOutlinedIcon />
                             </Avatar>
                             <Typography component="h1" variant="h5">
@@ -56,6 +89,8 @@ function LoginPage() {
                                     name="email"
                                     autoComplete="email"
                                     autoFocus
+                                    error={formError.errorOccurred}
+                                    helperText={formError.errorMsg}
                                 />
                                 <TextField
                                     margin="normal"
@@ -66,6 +101,8 @@ function LoginPage() {
                                     type="password"
                                     id="password"
                                     autoComplete="current-password"
+                                    error={formError.errorOccurred}
+                                    helperText={formError.errorMsg}
                                 />
                                 <FormControlLabel
                                     control={<Checkbox value="remember" color="primary" />}
@@ -80,14 +117,14 @@ function LoginPage() {
                                     Sign In
                                 </Button>
                                 <Grid container>
-                                    <Grid item xs>
+                                    <Grid item sx={{ margin: 'auto' }}>
                                         <Link href="#" variant="body2">
                                             Forgot password?
                                         </Link>
                                     </Grid>
-                                    <Grid item>
+                                    <Grid item sx={{ margin: 'auto' }}>
                                         <Link href="#" variant="body2">
-                                            {"Don't have an account? Sign Up"}
+                                            Don't have an account? Sign Up
                                         </Link>
                                     </Grid>
                                 </Grid>
