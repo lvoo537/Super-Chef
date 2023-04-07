@@ -23,3 +23,13 @@ class ShoppingList(models.Model):
     """
     user = models.OneToOneField(MyUser, on_delete=models.CASCADE, null=False, blank=False)
     recipes = models.ManyToManyField(Recipe, related_name='shopping_lists', null=True, blank=True)
+
+
+
+class BlackListedToken(models.Model):
+    token = models.CharField(max_length=500)
+    user = models.ForeignKey(MyUser, related_name="token_user", on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("token", "user")

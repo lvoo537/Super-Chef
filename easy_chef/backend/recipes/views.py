@@ -6,6 +6,7 @@ from rest_framework.generics import *
 from rest_framework.views import *
 from rest_framework import status
 from accounts.models import MyUser, ShoppingList
+from accounts.views import IsTokenValid
 from recipes.serializers import *
 from recipes.models import *
 
@@ -29,12 +30,17 @@ from recipes.serializers import CuisineSerializer, DietSerializer, \
 # Create your views here.
 
 class InstructionFileUpdate(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
     def post(self, request, instruction_id):
         # recipe_id = self.kwargs['recipe_id']
         try:
             instruction = Instruction.objects.get(id=instruction_id)
         except Instruction.DoesNotExist:
             return Response({'instruction_id': 'instruction does not exist.'}, status=404)
+
+        if instruction.recipe.owner != request.user:
+            return Response({'instruction_id': 'instruction does not belong to user.'}, status=403)
 
         instruction.photos_or_videos.all().delete()
         files = request.FILES
@@ -51,12 +57,17 @@ class InstructionFileUpdate(APIView):
 
 
 class RecipeFileUpdate(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
     def post(self, request, recipe_id):
         # recipe_id = self.kwargs['recipe_id']
         try:
             recipe = Recipe.objects.get(id=recipe_id)
         except Recipe.DoesNotExist:
             return Response({'recipe_id': 'Recipe does not exist.'}, status=404)
+        if recipe.owner != request.user:
+            return Response({'recipe_id': 'Recipe does not belong to user.'}, status=403)
+
         recipe.photos_or_videos.all().delete()
         files = request.FILES
         if files:
@@ -75,7 +86,7 @@ class RecipeFileUpdate(APIView):
 
 
 class UpdateRecipe(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request, recipe_id):
         try:
@@ -83,6 +94,7 @@ class UpdateRecipe(APIView):
         except Recipe.DoesNotExist:
             return Response({'recipe_id': 'Recipe does not exist.'}, status=404)
         errors = {}
+
         if recipe.owner != request.user:
             return Response({'recipe_id': 'Recipe does not belong to user.'}, status=403)
 
@@ -232,7 +244,7 @@ class UpdateRecipe(APIView):
 
 
 class CreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request):
         errors = {}
@@ -376,17 +388,20 @@ class CreateView(APIView):
 
 
 class RecipeFileUpload(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
     def post(self, request, recipe_id):
         # recipe_id = self.kwargs['recipe_id']
         try:
             recipe = Recipe.objects.get(id=recipe_id)
         except Recipe.DoesNotExist:
             return Response({'recipe_id': 'Recipe does not exist.'}, status=404)
+        if recipe.owner != request.user:
+            return Response({'user': 'You are not the owner of this recipe.'}, status=403)
         # recipe.photos_or_videos.all().delete()
         files = request.FILES
-        print(request)
         if files:
-            print(request)
+
             file_dict = MultiValueDict(files)
             for file_key in file_dict.keys():
                 file_list = file_dict.getlist(file_key)
@@ -405,12 +420,16 @@ class RecipeFileUpload(APIView):
 
 
 class InstructionFileUpload(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
     def post(self, request, instruction_id):
         # recipe_id = self.kwargs['recipe_id']
         try:
             instruction = Instruction.objects.get(id=instruction_id)
         except Instruction.DoesNotExist:
             return Response({'instruction_id': 'instruction does not exist.'}, status=404)
+        if instruction.recipe.owner != request.user:
+            return Response({'user': 'You are not the owner of this recipe.'}, status=403)
         # file = request.FILES['file']
         # name = file.name
         # instruction_file = InstructionFile.objects.create(name=name, recipe=instruction, file=file)
@@ -451,12 +470,19 @@ class IngredientSearchView(View):
 
 
 class DeleteRecipe(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
     def delete(self, request):
+
         recipe_id = request.data.get('recipe_id', '')
         try:
             recipe = Recipe.objects.get(id=recipe_id)
         except Recipe.DoesNotExist:
             return Response({'error': 'Recipe not found.'}, status=404)
+
+        if recipe.owner != request.user:
+            return Response({'recipe_id': 'Recipe does not belong to user.'}, status=403)
+
         recipe.delete()
         return Response({'success message': 'Recipe was deleted from the database'}, status=204)
 
@@ -562,7 +588,8 @@ class ReturnAllRecipes(ListAPIView):
     def get_queryset(self):
         return Recipe.objects.all()
 
-class ShoppingLists(View):
+class ShoppingLists(APIView):
+
     """
     This view is used to get the shopping list of a recipe.
     GET /recipes/shopping-list/
@@ -573,31 +600,36 @@ class ShoppingLists(View):
     Note:
         The user must be logged in to use this view.
     """
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def get(self, request):
-        username = request.GET.get('username', None)
-        if username is None:
-            return HttpResponseBadRequest("Username is required")
-        if not request.user.is_authenticated:
-            return HttpResponseForbidden("You must be logged in to use this view")
-        user = MyUser.objects.filter(username=username)
+
+        user = request.user
+
         if user is None:
             return HttpResponseBadRequest("User not found")
-        shopping_list = ShoppingList.objects.filter(user=user[0])
+
+        try:
+            shopping_list = ShoppingList.objects.get(user=user)
+        except ShoppingList.DoesNotExist:
+            return HttpResponseBadRequest("Shopping list not found", status=404)
+
         if shopping_list is None:
             return HttpResponseBadRequest("Shopping list not found")
-        recipes = shopping_list[0].recipes.all()
+        recipes = shopping_list.recipes.all()
         if recipes is None:
             return HttpResponseBadRequest("List of recipes are required")
-        result_json = {}
+        result_json = {'id': []}
+
         for recipe in recipes:
-            result_json[recipe.name] = {}
-            for ingredient in recipe.ingredients.all():
-                result_json[recipe.name][ingredient.name] = {
-                    'amount': ingredient.quantity,
-                    'unit_of_measure': ingredient.unit_of_measure
-                }
-            result_json[recipe.name]['servings'] = recipe.servings
+            result_json['id'].append(recipe.id)
+            # result_json[recipe.name] = {}
+            # for ingredient in recipe.ingredients.all():
+            #     result_json[recipe.name][ingredient.name] = {
+            #         'amount': ingredient.quantity,
+            #         'unit_of_measure': ingredient.unit_of_measure
+            #     }
+            # result_json[recipe.name]['servings'] = recipe.servings
         return JsonResponse(result_json, status=200)
 
 
@@ -614,7 +646,7 @@ class UpdateRecipeServings(APIView):
         The user must be logged in to use this view.
     """
     serializer_class = RecipeSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def get_queryset(self):
         recipe_name = self.request.GET.get('recipe_name', None)
