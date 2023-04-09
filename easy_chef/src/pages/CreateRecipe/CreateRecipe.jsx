@@ -33,7 +33,7 @@ function CreateRecipe() {
             </Grid>
             <Grid item xs={12}>
                 <Box component="form" onSubmit={handleSubmit}>
-                    <Grid container spacing={2} justifyContent="start">
+                    <Grid container spacing={2} justifyContent="center">
                         <Grid item xs={6}>
                             <TextField id="recipe-name" label="Recipe Name" variant="outlined" />
                         </Grid>
@@ -42,6 +42,9 @@ function CreateRecipe() {
                         </Grid>
                         <Grid item xs={6}>
                             <IngredientsTable />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <div></div>
                         </Grid>
                     </Grid>
                 </Box>
