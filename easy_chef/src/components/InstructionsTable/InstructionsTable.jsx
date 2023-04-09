@@ -34,6 +34,8 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 const measurements = ['mg', 'g', 'kg', 'lbs'];
 
 export default function InstructionsTable() {
+    // TODO: Use Accordion of MUI
+
     const [rowNum, setRowNum] = React.useState(2);
 
     const [instructionValues, setInstructionValues] = React.useState([]);
