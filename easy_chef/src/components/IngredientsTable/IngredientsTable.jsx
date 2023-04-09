@@ -1,128 +1,82 @@
 import * as React from 'react';
-import { styled } from '@mui/material/styles';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import { FormControl, InputLabel, OutlinedInput, Select } from '@mui/material';
-import Box from '@mui/material/Box';
+import { DataGrid } from '@mui/x-data-grid';
+import { Stack } from '@mui/material';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-        backgroundColor: theme.palette.primary.main,
-        color: theme.palette.common.white
-    },
-    [`&.${tableCellClasses.body}`]: {
-        fontSize: 14
-    }
-}));
-
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&': {
-        backgroundColor: theme.palette.action.hover
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-        border: 0
-    }
-}));
-
-const measurements = ['mg', 'g', 'kg', 'lbs'];
-
-export default function IngredientsTable() {
-    const [addIngredient, setAddIngredient] = React.useState({
+let idCounter = 0;
+const createRow = () => {
+    idCounter += 1;
+    return {
+        id: idCounter,
         ingredientName: '',
-        image: '',
-        amount: 0
-    });
-
-    const [measurement, setMeasurement] = React.useState('');
-    const handleMeasurementChange = (event) => {
-        setMeasurement(event.target.value);
+        ingredientAmount: 0
     };
+};
 
-    const [rowNum, setRowNum] = React.useState(1);
+const measurements = [
+    'Grams',
+    'Kilograms',
+    'Milliliters',
+    'Liters',
+    'Teaspoon',
+    'Cup',
+    'Ounce',
+    'Pound',
+    'Pinch',
+    'Unit'
+];
 
-    const rowTemplate = (num) => {
-        return (
-            <StyledTableRow key={`row-${num}`}>
-                <StyledTableCell component="th" scope="row">
-                    <TextField
-                        id="add-ingredient-name"
-                        label="Ingredient Name"
-                        variant="standard"
-                    />
-                </StyledTableCell>
-                <StyledTableCell>
-                    <Button variant="contained" component="label">
-                        Upload Image
-                        <input type="file" hidden />
-                    </Button>
-                </StyledTableCell>
-                <StyledTableCell>
-                    <TextField
-                        id="add-ingredient-amount"
-                        label="Ingredient Amount"
-                        variant="standard"
-                        type="number"
-                    />
-                </StyledTableCell>
-                <StyledTableCell>
-                    <FormControl fullWidth>
-                        <InputLabel id="measurements-label">Measure</InputLabel>
-                        <Select
-                            id="measurements"
-                            labelId="measurements-label"
-                            value={measurement}
-                            onChange={handleMeasurementChange}
-                            label="Measure"
-                            input={<OutlinedInput label="Measurements" />}
-                        >
-                            {measurements.map((measure) => (
-                                <MenuItem key={measure} value={measure}>
-                                    {measure}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                </StyledTableCell>
-            </StyledTableRow>
-        );
+function handleFileUpload(event, id) {}
+
+function IngredientsTable() {
+    const columns = [
+        { field: 'ingredientName', headerName: 'Name', width: 200, editable: true },
+        {
+            field: 'ingredientImage',
+            headerName: 'Image',
+            width: 260,
+            editable: true,
+            renderCell: (params) => (
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => handleFileUpload(event, params.id)}
+                />
+            )
+        },
+        {
+            field: 'ingredientAmount',
+            headerName: 'Amount',
+            type: 'number',
+            width: 130,
+            editable: true
+        },
+        {
+            field: 'ingredientMeasurement',
+            headerName: 'Measure',
+            width: 90,
+            editable: true,
+            type: 'singleSelect',
+            valueOptions: measurements
+        }
+    ];
+
+    const [rows, setRows] = React.useState(() => []);
+
+    const handleAddRow = () => {
+        setRows((prevState) => [...prevState, createRow()]);
     };
-
-    const [rows, setRows] = React.useState([rowTemplate(0)]);
 
     return (
-        <Box>
-            <Table
-                sx={{ width: 900, margin: 'auto', marginLeft: 0 }}
-                aria-label="ingredients table"
-            >
-                <TableHead>
-                    <TableRow>
-                        <StyledTableCell>Ingredient Name</StyledTableCell>
-                        <StyledTableCell>Image</StyledTableCell>
-                        <StyledTableCell>Amount</StyledTableCell>
-                        <StyledTableCell>Measurement</StyledTableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>{rows.map((row) => row)}</TableBody>
-            </Table>
-            <Button
-                variant="contained"
-                onClick={() => {
-                    setRowNum((prevState) => prevState + 1);
-                    console.log(rowNum);
-                    setRows((prevState) => [...prevState, rowTemplate(rowNum)]);
-                }}
-                sx={{ mt: 2 }}
-            >
-                Add Row
-            </Button>
-        </Box>
+        <div style={{ height: 400, width: '75%', marginBottom: 40 }}>
+            <Stack direction="row" spacing={1}>
+                <Button size="small" onClick={handleAddRow}>
+                    Add a row
+                </Button>
+            </Stack>
+            <DataGrid rows={rows} columns={columns} />
+        </div>
     );
 }
+
+export default IngredientsTable;
