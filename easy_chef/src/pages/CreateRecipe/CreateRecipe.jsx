@@ -27,13 +27,13 @@ function CreateRecipe() {
             .catch((error) => {});
     };
     return (
-        <Grid container spacing={2} sx={{ textAlign: 'center' }}>
+        <Grid container spacing={2} sx={{ textAlign: 'start' }}>
             <Grid item xs={12}>
                 <Navbar></Navbar>
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sx={{ ml: 6, mt: 6 }}>
                 <Box component="form" onSubmit={handleSubmit}>
-                    <Grid container spacing={2} justifyContent="center">
+                    <Grid container spacing={2}>
                         <Grid item xs={6}>
                             <TextField id="recipe-name" label="Recipe Name" variant="outlined" />
                         </Grid>

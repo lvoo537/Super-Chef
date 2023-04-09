@@ -73,13 +73,13 @@ export default function IngredientsTable() {
                 </StyledTableCell>
                 <StyledTableCell>
                     <FormControl fullWidth>
-                        <InputLabel id="measurements-label">Measurement</InputLabel>
+                        <InputLabel id="measurements-label">Measure</InputLabel>
                         <Select
                             id="measurements"
                             labelId="measurements-label"
                             value={measurement}
                             onChange={handleMeasurementChange}
-                            label="Measurement"
+                            label="Measure"
                             input={<OutlinedInput label="Measurements" />}
                         >
                             {measurements.map((measure) => (
@@ -96,11 +96,12 @@ export default function IngredientsTable() {
 
     const [rows, setRows] = React.useState([rowTemplate(0)]);
 
-    // TODO: Implement a button near end of table to add one more row
-    //       Then, setRows to the new array of rows
     return (
-        <Box marginLeft={4}>
-            <Table sx={{ width: 1000, margin: 'auto' }} aria-label="customized table">
+        <Box>
+            <Table
+                sx={{ width: 900, margin: 'auto', marginLeft: 0 }}
+                aria-label="ingredients table"
+            >
                 <TableHead>
                     <TableRow>
                         <StyledTableCell>Ingredient Name</StyledTableCell>
