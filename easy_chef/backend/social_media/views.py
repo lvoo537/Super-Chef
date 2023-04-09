@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.views import IsTokenValid
 from recipes.models import Rating, Recipe, Comment, CommentFile
 from social_media.serializers import RecipeSerializer
 
@@ -21,7 +22,7 @@ from rest_framework.parsers import MultiPartParser
 
 # Create your views here.
 class RateRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     # serializer_class = RateRecipeSerializer
 
@@ -79,7 +80,7 @@ class RateRecipeView(APIView):
 
 
 class FavoriteRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request, *args, **kwargs):
         recipe_id = self.kwargs.get('recipe_id')
@@ -95,7 +96,7 @@ class FavoriteRecipeView(APIView):
 
 
 class LikeRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request, *args, **kwargs):
         recipe_id = self.kwargs.get('recipe_id')
@@ -110,7 +111,7 @@ class LikeRecipeView(APIView):
 
 
 class UnFavoriteRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def delete(self, request, *args, **kwargs):
         recipe_id = self.kwargs.get('recipe_id')
@@ -126,7 +127,7 @@ class UnFavoriteRecipeView(APIView):
 
 
 class UnLikeRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def delete(self, request, *args, **kwargs):
         recipe_id = self.kwargs.get('recipe_id')
@@ -141,7 +142,7 @@ class UnLikeRecipeView(APIView):
 
 
 class MyRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def get(self, request, *args, **kwargs):
         my_recipes = {
@@ -200,10 +201,11 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
+
 class PopularRecipeView(ListAPIView):
     serializer_class = RecipeSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAuthenticated]
+
 
     def get_queryset(self):
         favourited = self.request.GET.get('favorites', '').lower() == 'true'
@@ -221,7 +223,7 @@ class PopularRecipeView(ListAPIView):
 
 
 class CommentRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request, *args, **kwargs):
         recipe_id = self.kwargs.get('recipe_id')
@@ -238,7 +240,7 @@ class CommentRecipeView(APIView):
 
 
 class CommentFileUploadView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
     parser_classes = [MultiPartParser]
 
     def post(self, request, *args, **kwargs):
@@ -251,9 +253,7 @@ class CommentFileUploadView(APIView):
             return Response({'comment_id': 'Comment does not exist.'}, status=404)
 
         files = request.FILES
-        print(request)
         if files:
-            print(request)
             file_dict = MultiValueDict(files)
             for file_key in file_dict.keys():
                 file_list = file_dict.getlist(file_key)
