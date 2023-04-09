@@ -1,6 +1,6 @@
-import { Box, Grid, Tab, Tabs } from '@mui/material';
+import { Box, Grid, Pagination, Stack, Tab, Tabs } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
-import React from 'react';
+import React, { useState } from 'react';
 import RecipeCard from '../../components/RecipeCard/RecipeCard';
 
 function createCardList() {
@@ -21,6 +21,8 @@ function createCardList() {
 
 function MyRecipes() {
     const [value, setValue] = React.useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const [currPage, setCurrPage] = useState(1);
     var temp_list = createCardList();
     const [cardList, setCardList] = React.useState(temp_list);
 
@@ -53,6 +55,15 @@ function MyRecipes() {
                         {cardList.map((reactElement) => reactElement)}
                     </Grid>
                 </Box>
+                <Stack pt="0.5%" width="100%" sx={{ paddingLeft: '44%' }}>
+                    <Pagination
+                        count={totalPages}
+                        onChange={(event, page) => {
+                            setCurrPage(page);
+                        }}
+                        color="primary"
+                    />
+                </Stack>
             </Grid>
         </Grid>
     );
