@@ -5,6 +5,8 @@ import fetchBackend from '../../Utils/fetchBackend';
 import { Grid, TextField, Box } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
 import IngredientsTable from '../../components/IngredientsTable/IngredientsTable';
+import InstructionsTable from '../../components/InstructionsTable/InstructionsTable';
+import Button from '@mui/material/Button';
 
 function CreateRecipe() {
     const navigate = useNavigate();
@@ -26,6 +28,15 @@ function CreateRecipe() {
             .then((response) => {})
             .catch((error) => {});
     };
+
+    const [imageName, setImageName] = useState('');
+
+    const handleImage = (event) => {
+        const files = Array.from(event.target.files);
+        const [file] = files;
+        setImageName(file.name);
+    };
+
     return (
         <Grid container spacing={2} sx={{ textAlign: 'start' }}>
             <Grid item xs={12}>
@@ -44,7 +55,20 @@ function CreateRecipe() {
                             <IngredientsTable />
                         </Grid>
                         <Grid item xs={6}>
-                            <div></div>
+                            <Button variant="contained" component="label">
+                                Upload Recipe Image
+                                <input type="file" hidden onChange={handleImage} />
+                            </Button>
+                            <TextField
+                                sx={{ ml: 2 }}
+                                InputProps={{ disableUnderline: true }}
+                                variant="standard"
+                                value={imageName}
+                                disabled
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <InstructionsTable />
                         </Grid>
                     </Grid>
                 </Box>
