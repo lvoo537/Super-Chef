@@ -7,7 +7,7 @@ function createCardList() {
     const cardList = [];
     for (let i = 0; i < 12; i++) {
         cardList.push(
-            <Grid key={i}>
+            <Grid item key={i} md={3}>
                 <RecipeCard
                     recipeName={`Recipe ${i + 1}`}
                     recipeDescription="Recipe Description"
@@ -21,7 +21,8 @@ function createCardList() {
 
 function MyRecipes() {
     const [value, setValue] = React.useState(0);
-    const [cardList, setCardList] = React.useState([]);
+    var temp_list = createCardList();
+    const [cardList, setCardList] = React.useState(temp_list);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -36,7 +37,7 @@ function MyRecipes() {
             <Grid item xs={12}>
                 {/** My Recipes Content Here  */}
                 <Box sx={{ width: '100%' }}>
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 1 }}>
                         <Tabs
                             value={value}
                             onChange={handleChange}
@@ -48,13 +49,7 @@ function MyRecipes() {
                             <Tab label="Interacted Recipes" id="interacted-recipes" />
                         </Tabs>
                     </Box>
-                    <Grid
-                        container
-                        rowSpacing={0}
-                        colSpacing={50}
-                        justifyContent="start"
-                        alignItems="center"
-                    >
+                    <Grid justifyContent="start" alignItems="center" container rowSpacing={2}>
                         {cardList.map((reactElement) => reactElement)}
                     </Grid>
                 </Box>
