@@ -5,7 +5,7 @@ import fetchBackend from '../../Utils/fetchBackend';
 import { Grid, TextField, Box } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
 import IngredientsTable from '../../components/IngredientsTable/IngredientsTable';
-import InstructionsTable from '../../components/InstructionsTable/InstructionsTable';
+import AddInstructionsComponent from '../../components/AddInstructionsComponent/AddInstructionsComponent';
 import Button from '@mui/material/Button';
 import { CreateRecipeIngredientsContext } from '../../contexts/CreateRecipeIngredientsContext/CreateRecipeIngredientsContext';
 
@@ -73,7 +73,7 @@ function CreateRecipe() {
                             />
                         </Grid>
                         <Grid item xs={6}>
-                            {/*<InstructionsTable />*/}
+                            <AddInstructionsComponent />
                         </Grid>
                     </Grid>
                 </Box>
