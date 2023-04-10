@@ -18,7 +18,9 @@ const createRow = () => {
     return {
         id: idCounter,
         ingredientName: '',
-        ingredientAmount: 0
+        ingredientImage: '',
+        ingredientAmount: 0,
+        ingredientMeasurement: measurements[0]
     };
 };
 
@@ -35,9 +37,6 @@ const measurements = [
     'Pinch',
     'Unit'
 ];
-
-// Callback function for handling on file upload
-function handleFileUpload(event, id) {}
 
 function IngredientsTable() {
     // To save ingredient info (from rows) to context
@@ -83,34 +82,53 @@ function IngredientsTable() {
         setRows((prevState) => [...prevState, createRow()]);
     };
 
-    // Use memoization to only re-create the function provided that
-    // either ingredients, or setIngredients changes.
-    const handleEditCellChange = React.useCallback(
-        (params, event) => {
-            // id: row id
-            // field: column value
-            // value: value of cell
-            const { id, field, value } = params;
-            // Iterate over existing state of ingredients and either
-            // update the state of existing ingredient or add new
-            // ingredient to state
-            const updatedIngredients = ingredients.map((ingredient) => {
-                if (ingredient.id === id) {
-                    return { ...ingredient, [field]: value };
+    /**
+     * Handle file upload by first encoding the image from event as
+     * base64 string, then adding said string as value for ingredientImage
+     * key in rows and ingredients states.
+     * @param event
+     * @param id
+     */
+    function handleFileUpload(event, id) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+            const base64String = reader.result;
+
+            setRows((currentRows) => {
+                const updatedRows = currentRows.map((row) => {
+                    if (row.id === id) {
+                        return { ...row, ingredientImage: base64String };
+                    }
+                    return row;
+                });
+
+                setIngredients(updatedRows);
+                return updatedRows;
+            });
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    const processRowUpdate = (newRow, oldRow) => {
+        setRows((currentRows) => {
+            const updatedRows = currentRows.map((row) => {
+                if (row.id === newRow.id) {
+                    return newRow;
                 }
-                return ingredient;
+                return row;
             });
 
-            // Update the state
-            setIngredients(updatedIngredients);
-        },
-        [ingredients, setIngredients]
-    );
+            setIngredients(updatedRows);
+            return updatedRows;
+        });
 
-    // Called when either rows or setIngredients changes values
-    React.useEffect(() => {
-        setIngredients(rows);
-    }, [rows, setIngredients]);
+        return newRow;
+    };
+
+    console.log(rows);
 
     return (
         <div style={{ height: 400, width: '75%', marginBottom: 40 }}>
@@ -122,7 +140,9 @@ function IngredientsTable() {
             <DataGrid
                 rows={rows}
                 columns={columns}
-                onEditCellChangeCommitted={handleEditCellChange}
+                editMode="row"
+                processRowUpdate={processRowUpdate}
+                experimentalFeatures={{ newEditingApi: true }}
             />
         </div>
     );
