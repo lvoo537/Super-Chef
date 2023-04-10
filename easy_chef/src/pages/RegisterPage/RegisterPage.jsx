@@ -24,9 +24,15 @@ function RegisterPage() {
     const navigate = useNavigate();
 
     // state for TextField error handling
-    const [formError, setFormError] = useState({
-        errorOccurred: false,
-        errorMsg: ''
+    const [formErrors, setFormErrors] = useState({
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone_number: '',
+        date_of_birth: '',
+        username: '',
+        password: '',
+        password2: ''
     });
 
     const handleSubmit = (event) => {
@@ -37,7 +43,7 @@ function RegisterPage() {
             first_name: data.get('first_name'),
             last_name: data.get('last_name'),
             date_of_birth: data.get('date_of_birth'),
-            phone: data.get('phone'),
+            phone_number: data.get('phone_number'),
             username: data.get('username'),
             email: data.get('email'),
             password: data.get('password'),
@@ -54,12 +60,29 @@ function RegisterPage() {
                 // assuming uid is returned from data
                 // setUid(response.data);
                 navigate('/');
+                sssssssssssssssssssssssssss;
             })
-            .catch((error) => {
-                console.log(error);
-                // if (error.response.status === 401) {
-                //     setFormError({ errorOccurred: true, errorMsg: error.response.data });
-                // }
+            .catch((errors) => {
+                setFormErrors({
+                    first_name: errors.response.data.first_name
+                        ? errors.response.data.first_name[0]
+                        : '',
+                    last_name: errors.response.data.last_name
+                        ? errors.response.data.last_name[0]
+                        : '',
+                    email: errors.response.data.email ? errors.response.data.email[0] : '',
+                    phone_number: errors.response.data.phone_number
+                        ? errors.response.data.phone_number[0]
+                        : '',
+                    date_of_birth: errors.response.data.date_of_birth
+                        ? errors.response.data.date_of_birth[0]
+                        : '',
+                    username: errors.response.data.username ? errors.response.data.username[0] : '',
+                    password: errors.response.data.password ? errors.response.data.password[0] : '',
+                    password2: errors.response.data.password2
+                        ? errors.response.data.password2[0]
+                        : ''
+                });
             });
 
         // fetchBackend
@@ -112,8 +135,8 @@ function RegisterPage() {
                                         name="first_name"
                                         placeholder="Enter first name"
                                         autoFocus
-                                        error={formError.errorOccurred}
-                                        helperText={formError.errorMsg}
+                                        error={!!formErrors.first_name}
+                                        helperText={formErrors.first_name}
                                     />
                                     <TextField
                                         margin="normal"
@@ -124,8 +147,8 @@ function RegisterPage() {
                                         name="last_name"
                                         placeholder="Enter last name"
                                         autoFocus
-                                        error={formError.errorOccurred}
-                                        helperText={formError.errorMsg}
+                                        error={!!formErrors.last_name}
+                                        helperText={formErrors.last_name}
                                     />
                                 </div>
 
@@ -138,8 +161,8 @@ function RegisterPage() {
                                     name="email"
                                     placeholder={'Enter email address'}
                                     autoFocus
-                                    error={formError.errorOccurred}
-                                    helperText={formError.errorMsg}
+                                    error={!!formErrors.email}
+                                    helperText={formErrors.email}
                                 />
 
                                 <TextField
@@ -149,11 +172,11 @@ function RegisterPage() {
                                     type="tel"
                                     id="phone"
                                     label={'Phone Number'}
-                                    name="phone"
+                                    name="phone_number"
                                     placeholder="Enter phone number"
                                     autoFocus
-                                    error={formError.errorOccurred}
-                                    helperText={formError.errorMsg}
+                                    error={!!formErrors.phone_number}
+                                    helperText={formErrors.phone_number}
                                 />
 
                                 <TextField
@@ -165,8 +188,8 @@ function RegisterPage() {
                                     placeholder={'YYYY-MM-DD'}
                                     name="date_of_birth"
                                     autoFocus
-                                    error={formError.errorOccurred}
-                                    helperText={formError.errorMsg}
+                                    error={!!formErrors.date_of_birth}
+                                    helperText={formErrors.date_of_birth}
                                 />
                                 <TextField
                                     margin="normal"
@@ -177,8 +200,8 @@ function RegisterPage() {
                                     name="username"
                                     placeholder="Enter username"
                                     autoFocus
-                                    error={formError.errorOccurred}
-                                    helperText={formError.errorMsg}
+                                    error={!!formErrors.username}
+                                    helperText={formErrors.username}
                                 />
 
                                 <TextField
@@ -189,8 +212,8 @@ function RegisterPage() {
                                     label="Password"
                                     type="password"
                                     id="password"
-                                    error={formError.errorOccurred}
-                                    helperText={formError.errorMsg}
+                                    error={!!formErrors.password}
+                                    helperText={formErrors.password}
                                 />
                                 <TextField
                                     margin="normal"
@@ -200,8 +223,8 @@ function RegisterPage() {
                                     label="Repeat Password"
                                     type="password"
                                     id="repeat_password"
-                                    error={formError.errorOccurred}
-                                    helperText={formError.errorMsg}
+                                    error={!!formErrors.password2}
+                                    helperText={formErrors.password2}
                                 />
                                 <Button
                                     type="submit"
