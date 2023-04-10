@@ -7,6 +7,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import IngredientsTable from '../../components/IngredientsTable/IngredientsTable';
 import InstructionsTable from '../../components/InstructionsTable/InstructionsTable';
 import Button from '@mui/material/Button';
+import { CreateRecipeIngredientsContext } from '../../contexts/CreateRecipeIngredientsContext/CreateRecipeIngredientsContext';
 
 function CreateRecipe() {
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ function CreateRecipe() {
         errorOccurred: false,
         errorMsg: ''
     });
+    const [ingredients, setIngredients] = useState([]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -30,7 +32,6 @@ function CreateRecipe() {
     };
 
     const [imageName, setImageName] = useState('');
-
     const handleImage = (event) => {
         const files = Array.from(event.target.files);
         const [file] = files;
@@ -52,12 +53,16 @@ function CreateRecipe() {
                             <TextField id="cooking-time" label="Cooking Time" variant="outlined" />
                         </Grid>
                         <Grid item xs={6}>
-                            <IngredientsTable />
+                            <CreateRecipeIngredientsContext.Provider
+                                value={{ ingredients, setIngredients }}
+                            >
+                                <IngredientsTable />
+                            </CreateRecipeIngredientsContext.Provider>
                         </Grid>
                         <Grid item xs={6}>
                             <Button variant="contained" component="label">
                                 Upload Recipe Image
-                                <input type="file" hidden onChange={handleImage} />
+                                <input type="file" accept="image/" hidden onChange={handleImage} />
                             </Button>
                             <TextField
                                 sx={{ ml: 2 }}
@@ -68,7 +73,7 @@ function CreateRecipe() {
                             />
                         </Grid>
                         <Grid item xs={6}>
-                            <InstructionsTable />
+                            {/*<InstructionsTable />*/}
                         </Grid>
                     </Grid>
                 </Box>
