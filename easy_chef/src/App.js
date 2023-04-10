@@ -14,28 +14,33 @@ import EditRecipe from './pages/EditRecipe/EditRecipe';
 import RecipeDetailsPage from './pages/RecipeDetailsPage/RecipeDetailsPage';
 import ShoppingCart from './pages/ShoppingCart/ShoppingCart';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 function App() {
-    function HomePageComponent() {
+    function HomePageComponent({ children }) {
         return (
-            <div className="App">
-                <header className="App-header">
-                    <img src={logo} className="App-logo" alt="logo" />
-                    <p>
-                        Edit <code>src/App.js</code> and save to reload.
-                    </p>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {children}
+                <div className="App">
+                    <header className="App-header">
+                        <img src={logo} className="App-logo" alt="logo" />
+                        <p>
+                            Edit <code>src/App.js</code> and save to reload.
+                        </p>
 
-                    <a
-                        className="App-link"
-                        href="https://reactjs.org"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Learn React
-                    </a>
-                </header>
-                <ExampleComponent text="This is an example component in Div" />
-            </div>
+                        <a
+                            className="App-link"
+                            href="https://reactjs.org"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Learn React
+                        </a>
+                    </header>
+                    <ExampleComponent text="This is an example component in Div" />
+                </div>
+            </LocalizationProvider>
         );
     }
 
