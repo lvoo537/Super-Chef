@@ -2,10 +2,7 @@ import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Stack } from '@mui/material';
 import Button from '@mui/material/Button';
-import {
-    CreateRecipeIngredientsContext,
-    useCreateIngredientsContext
-} from '../../contexts/CreateRecipeIngredientsContext/CreateRecipeIngredientsContext';
+import { CreateRecipeIngredientsContext } from '../../contexts/CreateRecipeIngredientsContext/CreateRecipeIngredientsContext';
 
 // For setting ID of row
 let idCounter = 0;
@@ -127,8 +124,6 @@ function IngredientsTable() {
 
         return newRow;
     };
-
-    console.log(rows);
 
     return (
         <div style={{ height: 400, width: '75%', marginBottom: 40 }}>
