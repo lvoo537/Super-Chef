@@ -60,7 +60,6 @@ function RegisterPage() {
                 // assuming uid is returned from data
                 // setUid(response.data);
                 navigate('/');
-                sssssssssssssssssssssssssss;
             })
             .catch((errors) => {
                 setFormErrors({
