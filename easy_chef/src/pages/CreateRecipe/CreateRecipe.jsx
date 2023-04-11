@@ -59,7 +59,7 @@ function CreateRecipe() {
                         <Grid item xs={1}>
                             <TextField id="cooking-time" label="Cooking Time" variant="outlined" />
                         </Grid>
-                        <Grid item xs={1} marginLeft={0} marginTop={3.8}>
+                        <Grid item xs={1} marginLeft={0} marginTop={0}>
                             <Button variant="contained" component="label">
                                 Upload Recipe Images
                                 <input
@@ -70,13 +70,6 @@ function CreateRecipe() {
                                     multiple
                                 />
                             </Button>
-                            <TextField
-                                sx={{ ml: 2 }}
-                                InputProps={{ disableUnderline: true }}
-                                variant="standard"
-                                value={imageName}
-                                disabled
-                            />
                         </Grid>
                         {imagesEncoded.length === 0 ? (
                             <div></div>
@@ -93,7 +86,7 @@ function CreateRecipe() {
                                 justifyContent="center"
                             >
                                 <Grid item xs={12}>
-                                    <Typography variant="h5" sx={{ mb: 1 }}>
+                                    <Typography variant="h5" sx={{ mb: 3, mt: 3 }}>
                                         Recipe Ingredients
                                     </Typography>
                                     <CreateRecipeIngredientsContext.Provider

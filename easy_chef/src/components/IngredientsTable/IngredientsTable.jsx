@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Stack } from '@mui/material';
+import { FormControl, InputLabel, Select, Stack } from '@mui/material';
 import Button from '@mui/material/Button';
 import { CreateRecipeIngredientsContext } from '../../contexts/CreateRecipeIngredientsContext/CreateRecipeIngredientsContext';
+import MenuItem from '@mui/material/MenuItem';
 
 // For setting ID of row
 let idCounter = 0;
@@ -75,8 +76,14 @@ function IngredientsTable({ width }) {
 
     // For creating new rows on table
     const [rows, setRows] = React.useState(() => []);
+    const [selectedRows, setSelectedRows] = React.useState([]);
+
     const handleAddRow = () => {
         setRows((prevState) => [...prevState, createRow()]);
+    };
+
+    const handleDeleteRow = () => {
+        setRows((prevState) => prevState.filter((row) => !selectedRows.includes(row.id)));
     };
 
     /**
@@ -131,6 +138,9 @@ function IngredientsTable({ width }) {
                 <Button size="small" onClick={handleAddRow}>
                     Add a row
                 </Button>
+                <Button size="small" onClick={handleDeleteRow}>
+                    Delete selected row
+                </Button>
             </Stack>
             <DataGrid
                 rows={rows}
@@ -138,6 +148,11 @@ function IngredientsTable({ width }) {
                 editMode="row"
                 processRowUpdate={processRowUpdate}
                 experimentalFeatures={{ newEditingApi: true }}
+                onRowSelectionModelChange={(newRowSelectionModel) => {
+                    setSelectedRows(newRowSelectionModel);
+                }}
+                rowSelectionModel={selectedRows}
+                sx={{ mt: 1 }}
             />
         </div>
     );

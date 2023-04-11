@@ -48,8 +48,6 @@ export default function AddInstructionsComponent() {
         setImagesEncoded([]);
     };
 
-    console.log(instructions);
-
     return (
         <div style={{ textAlign: 'start' }}>
             <div style={{ marginTop: 4 }}>
