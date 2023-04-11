@@ -56,7 +56,7 @@ function CreateRecipe() {
                             <CreateRecipeIngredientsContext.Provider
                                 value={{ ingredients, setIngredients }}
                             >
-                                <IngredientsTable />
+                                <IngredientsTable width={750} />
                             </CreateRecipeIngredientsContext.Provider>
                         </Grid>
                         <Grid item xs={6}>

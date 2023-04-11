@@ -35,7 +35,7 @@ const measurements = [
     'Unit'
 ];
 
-function IngredientsTable() {
+function IngredientsTable({ width }) {
     // To save ingredient info (from rows) to context
     const { ingredients, setIngredients } = React.useContext(CreateRecipeIngredientsContext);
 
@@ -126,7 +126,7 @@ function IngredientsTable() {
     };
 
     return (
-        <div style={{ height: 400, width: '75%', marginBottom: 40 }}>
+        <div style={{ height: 400, width: width, marginBottom: 40 }}>
             <Stack direction="row" spacing={1}>
                 <Button size="small" onClick={handleAddRow}>
                     Add a row

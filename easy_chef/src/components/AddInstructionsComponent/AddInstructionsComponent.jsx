@@ -9,6 +9,8 @@ import TextField from '@mui/material/TextField';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Unstable_Grid2';
 import { useState } from 'react';
+import Carousel from '../Carousel/Carousel';
+import Box from '@mui/material/Box';
 
 export default function AddInstructionsComponent() {
     const [instructionName, setInstructionName] = useState('');
@@ -53,6 +55,7 @@ export default function AddInstructionsComponent() {
                     <Paper
                         elevation={4}
                         sx={{ width: 750, maxWidth: 750, marginTop: 3, marginBottom: 4 }}
+                        key={index}
                     >
                         <Accordion key={index}>
                             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -60,6 +63,9 @@ export default function AddInstructionsComponent() {
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Typography>{instruction.instructionBody}</Typography>
+                                <Box display="flex" justifyContent="center" alignItems="center">
+                                    <Carousel images={instruction.instructionImages} />
+                                </Box>
                             </AccordionDetails>
                         </Accordion>
                     </Paper>
