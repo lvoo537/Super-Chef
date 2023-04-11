@@ -12,12 +12,11 @@ import { useState } from 'react';
 import Carousel from '../Carousel/Carousel';
 import Box from '@mui/material/Box';
 
-export default function AddInstructionsComponent() {
+export default function AddInstructionsComponent({ instructions, setInstructions }) {
     const [instructionName, setInstructionName] = useState('');
     const [instructionBody, setInstructionBody] = useState('');
     const [imageName, setImageName] = useState('');
     const [imagesEncoded, setImagesEncoded] = useState([]);
-    const [instructions, setInstructions] = useState([]);
     const handleImages = (event) => {
         const files = Array.from(event.target.files);
         const numSelected = `${files.length} Files Selected`;

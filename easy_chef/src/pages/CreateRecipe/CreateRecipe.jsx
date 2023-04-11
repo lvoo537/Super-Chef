@@ -21,13 +21,21 @@ function CreateRecipe() {
     const [ingredients, setIngredients] = useState([]);
     const [imageName, setImageName] = useState('');
     const [imagesEncoded, setImagesEncoded] = useState([]);
+    const [instructions, setInstructions] = useState([]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
 
         // get values for recipe creation
         const data = new FormData(event.currentTarget);
-        const dataToSend = {};
+        // TODO: Get recipe name, cooking time, recipe images, ingredients, instructions
+        const dataToSend = {
+            recipeName: data.get('recipe-name'),
+            cookingTime: data.get('cooking-time'),
+            recipeImages: imagesEncoded,
+            ingredients: ingredients,
+            instructions: instructions
+        };
 
         fetchBackend
             .post('/recipes/create-recipe', dataToSend)
@@ -99,7 +107,10 @@ function CreateRecipe() {
                                     <Typography variant="h5" sx={{ mb: 2, mt: 4 }}>
                                         Recipe Instructions
                                     </Typography>
-                                    <AddInstructionsComponent />
+                                    <AddInstructionsComponent
+                                        instructions={instructions}
+                                        setInstructions={setInstructions}
+                                    />
                                 </Grid>
                             </Grid>
                         </Grid>
