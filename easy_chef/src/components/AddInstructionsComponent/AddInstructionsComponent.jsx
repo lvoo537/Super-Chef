@@ -48,6 +48,8 @@ export default function AddInstructionsComponent() {
         setImagesEncoded([]);
     };
 
+    console.log(instructions);
+
     return (
         <div style={{ textAlign: 'start' }}>
             <div style={{ marginTop: 4 }}>
@@ -63,9 +65,13 @@ export default function AddInstructionsComponent() {
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Typography>{instruction.instructionBody}</Typography>
-                                <Box display="flex" justifyContent="center" alignItems="center">
-                                    <Carousel images={instruction.instructionImages} />
-                                </Box>
+                                {instruction.instructionImages.length === 0 ? (
+                                    <div></div>
+                                ) : (
+                                    <Box display="flex" justifyContent="center" alignItems="center">
+                                        <Carousel images={instruction.instructionImages} />
+                                    </Box>
+                                )}
                             </AccordionDetails>
                         </Accordion>
                     </Paper>

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRecipeContext } from '../../contexts/RecipeContext/RecipeContext';
 import { useState } from 'react';
 import fetchBackend from '../../Utils/fetchBackend';
+import encodeImages from '../../Utils/encodeImages';
 import { Grid, TextField, Box } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
 import IngredientsTable from '../../components/IngredientsTable/IngredientsTable';
@@ -17,6 +18,8 @@ function CreateRecipe() {
         errorMsg: ''
     });
     const [ingredients, setIngredients] = useState([]);
+    const [imageName, setImageName] = useState('');
+    const [imagesEncoded, setImagesEncoded] = useState([]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -31,38 +34,41 @@ function CreateRecipe() {
             .catch((error) => {});
     };
 
-    const [imageName, setImageName] = useState('');
-    const handleImage = (event) => {
-        const files = Array.from(event.target.files);
-        const [file] = files;
-        setImageName(file.name);
+    const handleImages = (event) => {
+        encodeImages(event, setImageName, setImagesEncoded);
     };
 
     return (
-        <Grid container spacing={2} sx={{ textAlign: 'start' }}>
+        <Grid container spacing={2} sx={{ textAlign: 'center' }}>
             <Grid item xs={12}>
                 <Navbar></Navbar>
             </Grid>
-            <Grid item xs={12} sx={{ ml: 6, mt: 6 }}>
+            <Grid item xs={12} sx={{ mt: 6 }}>
                 <Box component="form" onSubmit={handleSubmit}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={6}>
+                    <Grid
+                        container
+                        spacing={1}
+                        margin="auto"
+                        direction="column"
+                        alignItems="center"
+                        justifyContent="center"
+                    >
+                        <Grid item xs={4}>
                             <TextField id="recipe-name" label="Recipe Name" variant="outlined" />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={4}>
                             <TextField id="cooking-time" label="Cooking Time" variant="outlined" />
                         </Grid>
-                        <Grid item xs={6}>
-                            <CreateRecipeIngredientsContext.Provider
-                                value={{ ingredients, setIngredients }}
-                            >
-                                <IngredientsTable width={750} />
-                            </CreateRecipeIngredientsContext.Provider>
-                        </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={4} marginTop={1} marginLeft={23.8}>
                             <Button variant="contained" component="label">
-                                Upload Recipe Image
-                                <input type="file" accept="image/" hidden onChange={handleImage} />
+                                Upload Recipe Images
+                                <input
+                                    type="file"
+                                    accept="image/"
+                                    hidden
+                                    onChange={handleImages}
+                                    multiple
+                                />
                             </Button>
                             <TextField
                                 sx={{ ml: 2 }}
@@ -72,7 +78,14 @@ function CreateRecipe() {
                                 disabled
                             />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={12} marginLeft={2}>
+                            <CreateRecipeIngredientsContext.Provider
+                                value={{ ingredients, setIngredients }}
+                            >
+                                <IngredientsTable width={750} />
+                            </CreateRecipeIngredientsContext.Provider>
+                        </Grid>
+                        <Grid item xs={12} marginLeft={2}>
                             <AddInstructionsComponent />
                         </Grid>
                     </Grid>
