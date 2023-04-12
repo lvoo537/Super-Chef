@@ -44,9 +44,12 @@ function LoginPage() {
         fetchBackend
             .post('/accounts/login', dataToSend)
             .then((response) => {
+                localStorage.setItem('access', response.data.access);
+                localStorage.setItem('refresh', response.data.refresh);
+
                 setAuthenticated(true);
                 // assuming uid is returned from data
-                setUid(response.data);
+                setUid(response.data.user_id);
                 navigate('/');
             })
             .catch((error) => {
