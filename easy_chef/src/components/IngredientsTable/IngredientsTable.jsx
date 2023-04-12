@@ -16,7 +16,6 @@ const createRow = () => {
     return {
         id: idCounter,
         ingredientName: '',
-        ingredientImage: '',
         ingredientAmount: 0,
         ingredientMeasurement: measurements[0]
     };
@@ -42,21 +41,7 @@ function IngredientsTable({ width }) {
 
     // Set default column headers and their respective attributes
     const columns = [
-        { field: 'ingredientName', headerName: 'Name', width: 200, editable: true },
-        {
-            field: 'ingredientImage',
-            headerName: 'Image',
-            width: 260,
-            editable: true,
-            // For rendering file upload on cell
-            renderCell: (params) => (
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(event) => handleFileUpload(event, params.id)}
-                />
-            )
-        },
+        { field: 'ingredientName', headerName: 'Name', width: 500, editable: true },
         {
             field: 'ingredientAmount',
             headerName: 'Amount',
@@ -85,36 +70,6 @@ function IngredientsTable({ width }) {
     const handleDeleteRow = () => {
         setRows((prevState) => prevState.filter((row) => !selectedRows.includes(row.id)));
     };
-
-    /**
-     * Handle file upload by first encoding the image from event as
-     * base64 string, then adding said string as value for ingredientImage
-     * key in rows and ingredients states.
-     * @param event
-     * @param id
-     */
-    function handleFileUpload(event, id) {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-
-        reader.onloadend = () => {
-            const base64String = reader.result;
-
-            setRows((currentRows) => {
-                const updatedRows = currentRows.map((row) => {
-                    if (row.id === id) {
-                        return { ...row, ingredientImage: base64String };
-                    }
-                    return row;
-                });
-
-                setIngredients(updatedRows);
-                return updatedRows;
-            });
-        };
-
-        reader.readAsDataURL(file);
-    }
 
     const processRowUpdate = (newRow, oldRow) => {
         setRows((currentRows) => {
