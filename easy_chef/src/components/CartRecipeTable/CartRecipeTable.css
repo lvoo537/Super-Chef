@@ -1,0 +1,15 @@
+
+.recipe-insgredient-container {
+    height: 80px;
+    padding: 5px 10px 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 2px solid #878383a5;
+    /*white-space: wrap;*/
+    margin: 15% 5%;
+    border-radius: 5px;
+    max-height: 40vh;
+    width: 100%;
+    flex-basis: 0;
+    flex-grow: 1;
+}

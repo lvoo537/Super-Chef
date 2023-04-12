@@ -7,8 +7,9 @@ import { Grid, TextField, Box, TableFooter } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
 
 import { createTheme } from '@mui/material/styles';
-// what this do?
-const theme = createTheme();
+
+// // what this do?
+// const theme = createTheme();
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -18,12 +19,13 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import CartIngredientTable from '../../components/CartIngredientTable/CartIngredientTable';
+import CartRecipeTable from '../../components/CartRecipeTable/CartRecipeTable';
 
 function createIngredientData(name, unit, servings, price) {
     return { name, unit, servings, price };
 }
 
-const rows = [
+const ingredientRows = [
     createIngredientData('Flour', '4 ½ cups', 3, '$10'),
     createIngredientData('Sugar', '1 ½ cups', 3, '$10'),
     createIngredientData('Salt', '1 ½ teaspoons', 3, '$10'),
@@ -36,6 +38,26 @@ const rows = [
     createIngredientData('Chocolate chips', '1 cup', 3, '$10')
 ];
 
+const recipeRows = [
+    {
+        id: 1,
+        recipeName: 'Chocolate Brownie',
+        ingredients: [
+            'Flour',
+            'Sugar',
+            'Salt',
+            'Baking powder',
+            'Baking soda',
+            'Butter',
+            'Eggs',
+            'Vanilla extract',
+            'Milk',
+            'Chocolate chips'
+        ]
+    }
+    // { id: 2, recipeName: 'Chocolate Brownie', ingredients: 'Snow' }
+];
+
 function ShoppingCart() {
     const navigate = useNavigate();
 
@@ -44,11 +66,11 @@ function ShoppingCart() {
             <Grid item xs={12}>
                 <Navbar></Navbar>
             </Grid>
-            <Grid item xs={12}>
-                <CartRecipeTable rows={rows} />
+            <Grid item xs={6}>
+                <CartRecipeTable rows={recipeRows} />
             </Grid>
-            <Grid item xs={12}>
-                <CartIngredientTable rows={rows} />
+            <Grid item xs={5}>
+                <CartIngredientTable rows={ingredientRows} />
             </Grid>
         </Grid>
     );
