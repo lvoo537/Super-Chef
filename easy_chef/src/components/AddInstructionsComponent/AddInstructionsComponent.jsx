@@ -11,6 +11,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import { useState } from 'react';
 import Carousel from '../Carousel/Carousel';
 import Box from '@mui/material/Box';
+import RecipeInstructionsAccordion from '../RecipeInstructionsAccordion/RecipeInstructionsAccordion';
 
 export default function AddInstructionsComponent({ instructions, setInstructions }) {
     const [instructionName, setInstructionName] = useState('');
@@ -49,31 +50,7 @@ export default function AddInstructionsComponent({ instructions, setInstructions
 
     return (
         <div style={{ textAlign: 'start' }}>
-            <div style={{ marginTop: 4 }}>
-                {instructions.map((instruction, index) => (
-                    <Paper
-                        elevation={4}
-                        sx={{ width: 750, maxWidth: 750, marginTop: 3, marginBottom: 4 }}
-                        key={index}
-                    >
-                        <Accordion key={index}>
-                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                <Typography>{instruction.instructionName}</Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <Typography>{instruction.instructionBody}</Typography>
-                                {instruction.instructionImages.length === 0 ? (
-                                    <div></div>
-                                ) : (
-                                    <Box display="flex" justifyContent="center" alignItems="center">
-                                        <Carousel images={instruction.instructionImages} />
-                                    </Box>
-                                )}
-                            </AccordionDetails>
-                        </Accordion>
-                    </Paper>
-                ))}
-            </div>
+            <RecipeInstructionsAccordion instructions={instructions} />
             <Paper elevation={4} sx={{ width: 750, maxWidth: 750, marginBottom: 5 }}>
                 <Grid container spacing={4} margin="auto" marginLeft={3}>
                     <Grid item xs={12} marginTop={2}>
