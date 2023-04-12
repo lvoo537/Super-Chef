@@ -31,11 +31,16 @@ function CreateRecipe() {
         // TODO: Get recipe name, cooking time, recipe images, ingredients, instructions
         const dataToSend = {
             recipeName: data.get('recipe-name'),
-            cookingTime: data.get('cooking-time'),
+            cookingTime:
+                data.get('cooking-time') !== ''
+                    ? parseInt(data.get('cooking-time').toString())
+                    : -1,
             recipeImages: imagesEncoded,
             ingredients: ingredients,
             instructions: instructions
         };
+
+        console.log(dataToSend);
 
         fetchBackend
             .post('/recipes/create-recipe', dataToSend)
@@ -62,10 +67,22 @@ function CreateRecipe() {
                         justifyContent="center"
                     >
                         <Grid item xs={1}>
-                            <TextField id="recipe-name" label="Recipe Name" variant="outlined" />
+                            <TextField
+                                name="recipe-name"
+                                id="recipe-name"
+                                label="Recipe Name"
+                                variant="outlined"
+                            />
                         </Grid>
                         <Grid item xs={1}>
-                            <TextField id="cooking-time" label="Cooking Time" variant="outlined" />
+                            <TextField
+                                name="cooking-time"
+                                id="cooking-time"
+                                label="Cooking Time"
+                                variant="outlined"
+                                type="number"
+                                InputProps={{ inputProps: { min: 0 } }}
+                            />
                         </Grid>
                         <Grid item xs={1} marginLeft={0} marginTop={0}>
                             <Button variant="contained" component="label">
@@ -77,6 +94,11 @@ function CreateRecipe() {
                                     onChange={handleImages}
                                     multiple
                                 />
+                            </Button>
+                        </Grid>
+                        <Grid item xs={1}>
+                            <Button variant="contained" type="submit">
+                                Create Recipe
                             </Button>
                         </Grid>
                         {imagesEncoded.length === 0 ? (
