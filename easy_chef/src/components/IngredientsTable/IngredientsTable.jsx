@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { FormControl, InputLabel, Select, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import Button from '@mui/material/Button';
 import { CreateRecipeIngredientsContext } from '../../contexts/CreateRecipeIngredientsContext/CreateRecipeIngredientsContext';
-import MenuItem from '@mui/material/MenuItem';
 
 // For setting ID of row
 let idCounter = 0;
