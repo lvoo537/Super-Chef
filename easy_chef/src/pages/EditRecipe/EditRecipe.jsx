@@ -162,7 +162,7 @@ function EditRecipe() {
                                 variant="outlined"
                                 type="number"
                                 InputProps={{ inputProps: { min: 0 } }}
-                                value={cookingTime}
+                                value={cookingTime === 0 ? undefined : cookingTime}
                                 onChange={(event) =>
                                     setCookingTime(parseInt(event.target.value.toString()))
                                 }
@@ -176,7 +176,7 @@ function EditRecipe() {
                                 variant="outlined"
                                 type="number"
                                 InputProps={{ inputProps: { min: 0 } }}
-                                value={prepTime}
+                                value={prepTime === 0 ? undefined : prepTime}
                                 onChange={(event) =>
                                     setPrepTime(parseInt(event.target.value.toString()))
                                 }
