@@ -15,8 +15,8 @@ const createRow = () => {
     return {
         id: idCounter,
         ingredientName: '',
-        ingredientAmount: 0,
-        ingredientMeasurement: measurements[0]
+        quantity: 0,
+        unitOfMeasure: measurements[0]
     };
 };
 
@@ -42,14 +42,14 @@ function IngredientsTable({ width }) {
     const columns = [
         { field: 'ingredientName', headerName: 'Name', width: 500, editable: true },
         {
-            field: 'ingredientAmount',
+            field: 'quantity',
             headerName: 'Amount',
             type: 'number',
             width: 130,
             editable: true
         },
         {
-            field: 'ingredientMeasurement',
+            field: 'unitOfMeasure',
             headerName: 'Measure',
             width: 90,
             editable: true,

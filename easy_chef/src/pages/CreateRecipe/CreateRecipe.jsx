@@ -10,6 +10,8 @@ import AddInstructionsComponent from '../../components/AddInstructionsComponent/
 import Button from '@mui/material/Button';
 import { CreateRecipeIngredientsContext } from '../../contexts/CreateRecipeIngredientsContext/CreateRecipeIngredientsContext';
 import Carousel from '../../components/Carousel/Carousel';
+import * as React from 'react';
+import DietsCuisineTable from '../../components/DietsCuisineTable/DietsCuisineTable';
 
 function CreateRecipe() {
     const navigate = useNavigate();
@@ -23,6 +25,9 @@ function CreateRecipe() {
     const [imagesEncoded, setImagesEncoded] = useState([]);
     const [instructions, setInstructions] = useState([]);
 
+    const [diets, setDiets] = React.useState([]);
+    const [cuisines, setCuisines] = React.useState([]);
+
     const handleSubmit = (event) => {
         event.preventDefault();
 
@@ -35,9 +40,14 @@ function CreateRecipe() {
                 data.get('cooking-time') !== ''
                     ? parseInt(data.get('cooking-time').toString())
                     : -1,
+            prepTime:
+                data.get('prep-time') !== '' ? parseInt(data.get('prep-time').toString()) : -1,
+            baseRecipe: data.get('base-recipe'),
             recipeImages: imagesEncoded,
             ingredients: ingredients,
-            instructions: instructions
+            instructions: instructions,
+            cuisine: cuisines,
+            diets: diets
         };
 
         console.log(dataToSend);
@@ -84,6 +94,16 @@ function CreateRecipe() {
                                 InputProps={{ inputProps: { min: 0 } }}
                             />
                         </Grid>
+                        <Grid item xs={1}>
+                            <TextField
+                                name="prep-time"
+                                id="prep-time"
+                                label="Prep Time"
+                                variant="outlined"
+                                type="number"
+                                InputProps={{ inputProps: { min: 0 } }}
+                            />
+                        </Grid>
                         <Grid item xs={1} marginLeft={0} marginTop={0}>
                             <Button variant="contained" component="label">
                                 Upload Recipe Images
@@ -100,6 +120,14 @@ function CreateRecipe() {
                             <Button variant="contained" type="submit">
                                 Create Recipe
                             </Button>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                name="base-recipe"
+                                id="base-recipe"
+                                label="Base Recipe"
+                                sx={{ width: 500 }}
+                            />
                         </Grid>
                         {imagesEncoded.length === 0 ? (
                             <div></div>
@@ -132,6 +160,16 @@ function CreateRecipe() {
                                     <AddInstructionsComponent
                                         instructions={instructions}
                                         setInstructions={setInstructions}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sx={{ mb: 3 }}>
+                                    <Typography variant="h5" sx={{ mb: 3, mt: 3 }}>
+                                        Related Cuisines/Diets
+                                    </Typography>
+                                    <DietsCuisineTable
+                                        setCuisines={setCuisines}
+                                        setDiets={setDiets}
+                                        width={750}
                                     />
                                 </Grid>
                             </Grid>

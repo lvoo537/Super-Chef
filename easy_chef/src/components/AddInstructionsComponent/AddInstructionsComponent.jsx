@@ -5,10 +5,13 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Unstable_Grid2';
 import { useState } from 'react';
 import RecipeInstructionsAccordion from '../RecipeInstructionsAccordion/RecipeInstructionsAccordion';
+import { Typography } from '@mui/material';
 
 export default function AddInstructionsComponent({ instructions, setInstructions }) {
-    const [instructionName, setInstructionName] = useState('');
     const [instructionBody, setInstructionBody] = useState('');
+    const [instructionNum, setInstructionNum] = useState(1);
+    const [cookingTime, setCookingTime] = useState(0);
+    const [prepTime, setPrepTime] = useState(0);
     const [imageName, setImageName] = useState('');
     const [imagesEncoded, setImagesEncoded] = useState([]);
     const handleImages = (event) => {
@@ -28,16 +31,20 @@ export default function AddInstructionsComponent({ instructions, setInstructions
 
     const handleAddInstruction = () => {
         const newInstruction = {
-            instructionName,
-            instructionBody,
+            instruction: instructionBody,
+            stepNumber: instructionNum,
+            cookingTime,
+            prepTime,
             instructionImages: imagesEncoded
         };
         setInstructions((prevState) => [...prevState, newInstruction]);
+        setInstructionNum((prevState) => prevState + 1);
 
         // Reset values for next instruction
-        setInstructionName('');
         setInstructionBody('');
         setImageName('');
+        setCookingTime(1);
+        setPrepTime(1);
         setImagesEncoded([]);
     };
 
@@ -47,12 +54,28 @@ export default function AddInstructionsComponent({ instructions, setInstructions
             <Paper elevation={4} sx={{ width: 750, maxWidth: 750, marginBottom: 5 }}>
                 <Grid container spacing={4} margin="auto" marginLeft={3}>
                     <Grid item xs={12} marginTop={2}>
+                        <Typography variant="h6">Instruction #{instructionNum}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
                         <TextField
-                            id="instruction-name"
-                            label="Instruction Name"
+                            id="cooking-time"
+                            label="Cooking Time"
                             variant="outlined"
-                            value={instructionName}
-                            onChange={(e) => setInstructionName(e.target.value)}
+                            value={cookingTime}
+                            onChange={(e) => setCookingTime(parseInt(e.target.value))}
+                            type="number"
+                            InputProps={{ inputProps: { min: 0 } }}
+                        />
+                    </Grid>
+                    <Grid item xs={6}>
+                        <TextField
+                            id="prep-time"
+                            label="Preparation Time"
+                            variant="outlined"
+                            value={prepTime}
+                            onChange={(e) => setPrepTime(parseInt(e.target.value))}
+                            type="number"
+                            InputProps={{ inputProps: { min: 0 } }}
                         />
                     </Grid>
                     <Grid item xs={12}>
