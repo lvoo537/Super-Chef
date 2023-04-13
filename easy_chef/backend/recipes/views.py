@@ -605,7 +605,7 @@ class ShoppingLists(APIView):
     def get(self, request):
 
         user = request.user
-
+        print(user)
         if user is None:
             return HttpResponseBadRequest("User not found")
 
@@ -619,18 +619,21 @@ class ShoppingLists(APIView):
         recipes = shopping_list.recipes.all()
         if recipes is None:
             return HttpResponseBadRequest("List of recipes are required")
-        result_json = {'id': []}
 
-        for recipe in recipes:
-            result_json['id'].append(recipe.id)
-            # result_json[recipe.name] = {}
-            # for ingredient in recipe.ingredients.all():
-            #     result_json[recipe.name][ingredient.name] = {
-            #         'amount': ingredient.quantity,
-            #         'unit_of_measure': ingredient.unit_of_measure
-            #     }
-            # result_json[recipe.name]['servings'] = recipe.servings
-        return JsonResponse(result_json, status=200)
+        serializer = RecipeSerializer(recipes, many=True)
+        result_json = {'recipes': serializer.data}
+        return Response(result_json)
+
+#         for recipe in recipes:
+#             result_json['id'].append(recipe.id)
+#             # result_json[recipe.name] = {}
+#             # for ingredient in recipe.ingredients.all():
+#             #     result_json[recipe.name][ingredient.name] = {
+#             #         'amount': ingredient.quantity,
+#             #         'unit_of_measure': ingredient.unit_of_measure
+#             #     }
+#             # result_json[recipe.name]['servings'] = recipe.servings
+#         return JsonResponse(result_json, status=200)
 
 
 class UpdateRecipeServings(APIView):
