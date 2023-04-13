@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'recipes',
     'search',
     'social_media',
-    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -54,8 +53,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'easy_chef.urls'
