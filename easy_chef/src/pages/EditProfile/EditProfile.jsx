@@ -18,8 +18,11 @@ import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import Navbar from '../../components/Navbar/Navbar';
+import fetchBackend from '../../Utils/fetchBackend';
+import { useNavigate } from 'react-router-dom';
 
 function EditProfile() {
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [password, setPassword] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
@@ -31,18 +34,67 @@ function EditProfile() {
     const [location, setLocation] = useState('');
     const [email, setEmail] = useState('');
     const [terms, setTerms] = useState(false);
+    const [username, setUsername] = useState('');
+
+    const [error, setError] = useState({
+        errorStatus: false,
+        errorMsg: <div></div>
+    });
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
 
     const handleMouseDownPassword = (event) => {
         event.preventDefault();
     };
+
+    const handleSubmission = (event) => {
+        event.preventDefault();
+
+        if (password.length !== 0 && password !== repeatPassword) {
+            navigate('/accounts/edit-profile');
+            return;
+        }
+
+        const dataToSend = {
+            username,
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            phone_number: phone,
+            date_of_birth: dob,
+            bio,
+            location,
+            old_password: password
+        };
+
+        console.log(dataToSend);
+
+        fetchBackend
+            .post('/accounts/profile/edit/', dataToSend)
+            .then((response) => {
+                navigate('/');
+            })
+            .catch((err) => {
+                if (err.response.data && err.response.data['username']) {
+                    setError({
+                        errorStatus: true,
+                        errorMsg: (
+                            <Typography sx={{ color: 'red' }}>
+                                {err.response.data['username']}
+                            </Typography>
+                        )
+                    });
+                }
+                // navigate('/accounts/edit-profile');
+            });
+    };
+
     return (
         <div>
             <Navbar />
             <Grid container spacing={2} paddingX="20%" marginTop={5}>
                 <Grid item xs={12}>
-                    <Box component="form">
+                    <Box component="form" onSubmit={handleSubmission}>
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <TextField
@@ -73,6 +125,16 @@ function EditProfile() {
                                         width: '68%'
                                     }}
                                 >
+                                    <TextField
+                                        id="username"
+                                        label="New Username"
+                                        variant="outlined"
+                                        sx={{ mb: 2 }}
+                                        value={username}
+                                        onChange={(event) => {
+                                            setUsername(event.target.value);
+                                        }}
+                                    />
                                     <TextField
                                         id="date-of-birth"
                                         label="Date of Birth"
@@ -148,7 +210,7 @@ function EditProfile() {
                                     alignItems="center"
                                 >
                                     <FormControl variant="outlined" sx={{ maxWidth: 250 }}>
-                                        <InputLabel htmlFor="password1">Password</InputLabel>
+                                        <InputLabel htmlFor="password1">New Password</InputLabel>
                                         <OutlinedInput
                                             id="password1"
                                             type={showPassword ? 'text' : 'password'}
@@ -172,7 +234,7 @@ function EditProfile() {
                                             onChange={(event) => {
                                                 setPassword(event.target.value);
                                             }}
-                                            label="Password"
+                                            label="New Password"
                                         />
                                     </FormControl>
                                 </Box>
@@ -244,6 +306,9 @@ function EditProfile() {
                                         label="I agree with the terms and conditions."
                                     />
                                 </FormGroup>
+                            </Grid>
+                            <Grid item xs={12}>
+                                {error.errorStatus ? error.errorMsg : <div></div>}
                             </Grid>
                             <Grid item xs={12}>
                                 <Button type="submit" variant="contained">

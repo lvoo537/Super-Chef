@@ -35,15 +35,15 @@ function CreateRecipe() {
         const data = new FormData(event.currentTarget);
         // TODO: Get recipe name, cooking time, recipe images, ingredients, instructions
         const dataToSend = {
-            recipeName: data.get('recipe-name'),
-            cookingTime:
+            name: data.get('recipe-name'),
+            cooking_time:
                 data.get('cooking-time') !== ''
                     ? parseInt(data.get('cooking-time').toString())
                     : -1,
-            prepTime:
+            prep_time:
                 data.get('prep-time') !== '' ? parseInt(data.get('prep-time').toString()) : -1,
-            baseRecipe: data.get('base-recipe'),
-            recipeImages: imagesEncoded,
+            base_recipe: data.get('base-recipe'),
+            photos_or_videos: imagesEncoded,
             ingredients: ingredients,
             instructions: instructions,
             cuisine: cuisines,
@@ -53,7 +53,7 @@ function CreateRecipe() {
         console.log(dataToSend);
 
         fetchBackend
-            .post('/recipes/create-recipe', dataToSend)
+            .post('/recipes/create/', dataToSend)
             .then((response) => {
                 // From response, if successful, get the recipe ID. So update the recipe context.
             })
