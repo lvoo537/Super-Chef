@@ -51,9 +51,7 @@ function LoginPage() {
                 navigate('/');
             })
             .catch((error) => {
-                if (error.response.status === 401) {
-                    setFormError({ errorOccurred: true, errorMsg: error.response.data });
-                }
+                navigate('/login');
             });
     };
 

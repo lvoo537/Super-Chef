@@ -33,6 +33,7 @@ function App() {
                             <Route path="edit-profile" element={<EditProfile />} />
                             <Route path="logout" element={<LogoutPage />} />
                             <Route path="my-recipe" element={<MyRecipes />} />
+                            <Route path="shopping-cart" element={<ShoppingCart />} />
                         </Route>
                         <Route path="/recipes/*" element={<PrivateRoute />}>
                             <Route path="create-recipe" element={<CreateRecipe />} />
@@ -46,7 +47,6 @@ function App() {
                             path="/search-results/:searchQuery"
                             element={<SearchResultsPage />}
                         />
-                        <Route path="/shopping-cart" element={<PrivateRoute />} />
                     </Routes>
                 </BrowserRouter>
             </SearchQueryResponseProvider>

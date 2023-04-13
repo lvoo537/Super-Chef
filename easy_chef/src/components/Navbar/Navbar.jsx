@@ -21,6 +21,7 @@ const pages = [
 ];
 const settings = [
     ['Edit Profile', '/accounts/edit-profile'],
+    ['Shopping Cart', '/accounts/shopping-cart'],
     ['View Profile', '/accounts/view-profile'],
     ['Logout', '/accounts/logout']
 ];
