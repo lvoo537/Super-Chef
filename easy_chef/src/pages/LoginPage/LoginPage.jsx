@@ -103,10 +103,6 @@ function LoginPage() {
                                     error={formError.errorOccurred}
                                     helperText={formError.errorMsg}
                                 />
-                                <FormControlLabel
-                                    control={<Checkbox value="remember" color="primary" />}
-                                    label="Remember me"
-                                />
                                 <Button
                                     type="submit"
                                     fullWidth
