@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const AuthContext = createContext({
     authenticated: false,
@@ -6,18 +6,18 @@ const AuthContext = createContext({
 });
 
 export function AuthProvider({ children }) {
-    const [authState, setAuthState] = useState({
-        authenticated: false
+    const [authenticated, setAuthenticated] = useState(() => {
+        return JSON.parse(localStorage.getItem('authenticated')) || false;
     });
 
-    const setAuthenticated = (value) => {
-        setAuthState((prevState) => ({ ...prevState, authenticated: value }));
-    };
+    useEffect(() => {
+        localStorage.setItem('authenticated', JSON.stringify(authenticated));
+    }, [authenticated]);
 
     return (
         <AuthContext.Provider
             value={{
-                authenticated: authState.authenticated,
+                authenticated,
                 setAuthenticated
             }}
         >
