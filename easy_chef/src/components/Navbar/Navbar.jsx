@@ -13,6 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from '../../contexts/Auth/AuthContext';
 
 const pages = [
     ['My Recipes', '/accounts/my-recipe'],
@@ -24,8 +25,14 @@ const settings = [
     ['Logout', '/accounts/logout']
 ];
 
+const authSettings = [
+    ['Register', '/register'],
+    ['Login', '/login']
+];
+
 function Navbar() {
     const navigate = useNavigate();
+    const { authenticated } = useAuthContext();
 
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
@@ -43,6 +50,20 @@ function Navbar() {
 
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
+    };
+
+    const renderUserMenuItems = () => {
+        const items = authenticated ? settings : authSettings;
+        return items.map((item) => (
+            <MenuItem
+                key={item[0]}
+                onClick={() => {
+                    navigate(item[1]);
+                }}
+            >
+                <Typography textAlign="center">{item[0]}</Typography>
+            </MenuItem>
+        ));
     };
 
     return (
@@ -139,16 +160,7 @@ function Navbar() {
                             open={Boolean(anchorElUser)}
                             onClose={handleCloseUserMenu}
                         >
-                            {settings.map((setting) => (
-                                <MenuItem
-                                    key={setting[0]}
-                                    onClick={(event) => {
-                                        navigate(setting[1]);
-                                    }}
-                                >
-                                    <Typography textAlign="center">{setting[0]}</Typography>
-                                </MenuItem>
-                            ))}
+                            {renderUserMenuItems()}
                         </Menu>
                     </Box>
                 </Toolbar>
@@ -156,4 +168,4 @@ function Navbar() {
         </AppBar>
     );
 }
-export default Navbar;
+export default React.memo(Navbar);

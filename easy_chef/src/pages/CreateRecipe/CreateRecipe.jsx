@@ -54,7 +54,9 @@ function CreateRecipe() {
 
         fetchBackend
             .post('/recipes/create-recipe', dataToSend)
-            .then((response) => {})
+            .then((response) => {
+                // From response, if successful, get the recipe ID. So update the recipe context.
+            })
             .catch((error) => {});
     };
 
