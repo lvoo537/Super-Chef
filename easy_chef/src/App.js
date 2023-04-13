@@ -25,17 +25,38 @@ function App() {
                     <Route path="/" element={<MainPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
-                    <PrivateRoute path="/accounts/view-profile" element={<ViewProfile />} />
-                    <PrivateRoute path="/accounts/edit-profile" element={<EditProfile />} />
-                    <PrivateRoute path="/accounts/logout" element={<LogoutPage />} />
-                    <PrivateRoute path="/accounts/my-recipe" element={<MyRecipes />} />
-                    <PrivateRoute path="/recipes/create-recipe" element={<CreateRecipe />} />
-                    <PrivateRoute path="/recipes/edit-recipe/:recipeId" element={<EditRecipe />} />
+                    <Route
+                        path="/accounts/view-profile"
+                        element={<PrivateRoute element={<ViewProfile />} />}
+                    />
+                    <Route
+                        path="/accounts/edit-profile"
+                        element={<PrivateRoute element={<EditProfile />} />}
+                    />
+                    <Route
+                        path="/accounts/logout"
+                        element={<PrivateRoute element={<LogoutPage />} />}
+                    />
+                    <Route
+                        path="/accounts/my-recipe"
+                        element={<PrivateRoute element={<MyRecipes />} />}
+                    />
+                    <Route
+                        path="/recipes/create-recipe"
+                        element={<PrivateRoute element={<CreateRecipe />} />}
+                    />
+                    <Route
+                        path="/recipes/edit-recipe/:recipeId"
+                        element={<PrivateRoute element={<EditRecipe />} />}
+                    />
                     <Route
                         path="/recipes/recipe-details/:recipeId"
                         element={<RecipeDetailsPage />}
                     />
-                    <PrivateRoute path="/shopping-cart" element={<ShoppingCart />} />
+                    <Route
+                        path="/shopping-cart"
+                        element={<PrivateRoute element={<ShoppingCart />} />}
+                    />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
