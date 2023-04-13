@@ -21,7 +21,7 @@ const theme = createTheme();
 function LoginPage() {
     const navigate = useNavigate();
 
-    const { setAuthenticated, setUid } = useAuthContext();
+    const { setAuthenticated, authenticated } = useAuthContext();
 
     // state for TextField error handling
     const [formError, setFormError] = useState({
@@ -35,21 +35,19 @@ function LoginPage() {
         // get the email and password values on text-fields (form)
         const data = new FormData(event.currentTarget);
         const dataToSend = {
-            email: data.get('email'),
+            username: data.get('username'),
             password: data.get('password')
         };
 
         // hit backend endpoint and redirect to home on success.
         // otherwise, set text-field error messages appropriately.
         fetchBackend
-            .post('/accounts/login', dataToSend)
+            .post('/accounts/login/', dataToSend)
             .then((response) => {
                 localStorage.setItem('access', response.data.access);
                 localStorage.setItem('refresh', response.data.refresh);
 
                 setAuthenticated(true);
-                // assuming uid is returned from data
-                setUid(response.data.user_id);
                 navigate('/');
             })
             .catch((error) => {
@@ -87,10 +85,10 @@ function LoginPage() {
                                     margin="normal"
                                     required
                                     fullWidth
-                                    id="email"
-                                    label="Email Address"
-                                    name="email"
-                                    autoComplete="email"
+                                    id="username"
+                                    label="Username"
+                                    name="username"
+                                    autoComplete="username"
                                     autoFocus
                                     error={formError.errorOccurred}
                                     helperText={formError.errorMsg}
