@@ -14,6 +14,7 @@ import EditRecipe from './pages/EditRecipe/EditRecipe';
 import RecipeDetailsPage from './pages/RecipeDetailsPage/RecipeDetailsPage';
 import ShoppingCart from './pages/ShoppingCart/ShoppingCart';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
+import { AuthProvider } from './contexts/Auth/AuthContext';
 
 function App() {
     function HomePageComponent() {
@@ -40,21 +41,26 @@ function App() {
     }
 
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<MainPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/accounts/view-profile" element={<ViewProfile />} />
-                <Route path="/accounts/edit-profile" element={<EditProfile />} />
-                <Route path="/accounts/logout" element={<LogoutPage />} />
-                <Route path="/accounts/my-recipe" element={<MyRecipes />} />
-                <Route path="/recipes/create-recipe" element={<CreateRecipe />} />
-                <Route path="/recipes/edit-recipe/:recipeId" element={<EditRecipe />} />
-                <Route path="/recipes/recipe-details/:recipeId" element={<RecipeDetailsPage />} />
-                <Route path="/shopping-cart" element={<ShoppingCart />} />
-            </Routes>
-        </BrowserRouter>
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<MainPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/accounts/view-profile" element={<ViewProfile />} />
+                    <Route path="/accounts/edit-profile" element={<EditProfile />} />
+                    <Route path="/accounts/logout" element={<LogoutPage />} />
+                    <Route path="/accounts/my-recipe" element={<MyRecipes />} />
+                    <Route path="/recipes/create-recipe" element={<CreateRecipe />} />
+                    <Route path="/recipes/edit-recipe/:recipeId" element={<EditRecipe />} />
+                    <Route
+                        path="/recipes/recipe-details/:recipeId"
+                        element={<RecipeDetailsPage />}
+                    />
+                    <Route path="/shopping-cart" element={<ShoppingCart />} />
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
     );
 }
 
