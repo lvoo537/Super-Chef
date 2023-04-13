@@ -1,7 +1,13 @@
-import { Route, Navigate } from 'react-router-dom';
+import { Navigate, Outlet, useParams } from 'react-router-dom';
 import { useAuthContext } from '../../contexts/Auth/AuthContext';
 
-export default function PrivateRoute(props) {
+export default function PrivateRoute() {
     const { authenticated } = useAuthContext();
-    return authenticated ? <Route {...props} /> : <Navigate to="/login" />;
+    const params = useParams();
+
+    if (authenticated) {
+        return <Outlet />;
+    } else {
+        return <Navigate to={`/login?next=${params.path}`} replace />;
+    }
 }
