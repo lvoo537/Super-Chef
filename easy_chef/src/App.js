@@ -16,32 +16,40 @@ import ShoppingCart from './pages/ShoppingCart/ShoppingCart';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
 import { AuthProvider } from './contexts/Auth/AuthContext';
 import PrivateRoute from './components/PrivateRoute/PrivateRoute';
+import SearchResultsPage from './pages/SearchResultsPage/SearchResultsPage';
+import { SearchQueryResponseProvider } from './contexts/SearchQueryResponseContext/SearchQueryResponseContext';
 
 function App() {
     return (
         <AuthProvider>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<MainPage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/accounts/*" element={<PrivateRoute />}>
-                        <Route index element={<ViewProfile />} />
-                        <Route path="edit-profile" element={<EditProfile />} />
-                        <Route path="logout" element={<LogoutPage />} />
-                        <Route path="my-recipe" element={<MyRecipes />} />
-                    </Route>
-                    <Route path="/recipes/*" element={<PrivateRoute />}>
-                        <Route path="create-recipe" element={<CreateRecipe />} />
-                        <Route path="edit-recipe/:recipeId" element={<EditRecipe />} />
-                    </Route>
-                    <Route
-                        path="/recipes/recipe-details/:recipeId"
-                        element={<RecipeDetailsPage />}
-                    />
-                    <Route path="/shopping-cart" element={<PrivateRoute />} />
-                </Routes>
-            </BrowserRouter>
+            <SearchQueryResponseProvider>
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="/" element={<MainPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/accounts/*" element={<PrivateRoute />}>
+                            <Route index element={<ViewProfile />} />
+                            <Route path="edit-profile" element={<EditProfile />} />
+                            <Route path="logout" element={<LogoutPage />} />
+                            <Route path="my-recipe" element={<MyRecipes />} />
+                        </Route>
+                        <Route path="/recipes/*" element={<PrivateRoute />}>
+                            <Route path="create-recipe" element={<CreateRecipe />} />
+                            <Route path="edit-recipe/:recipeId" element={<EditRecipe />} />
+                        </Route>
+                        <Route
+                            path="/recipes/recipe-details/:recipeId"
+                            element={<RecipeDetailsPage />}
+                        />
+                        <Route
+                            path="/search-results/:searchQuery"
+                            element={<SearchResultsPage />}
+                        />
+                        <Route path="/shopping-cart" element={<PrivateRoute />} />
+                    </Routes>
+                </BrowserRouter>
+            </SearchQueryResponseProvider>
         </AuthProvider>
     );
 }
