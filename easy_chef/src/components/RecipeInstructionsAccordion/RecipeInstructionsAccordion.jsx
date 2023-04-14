@@ -9,6 +9,18 @@ import Paper from '@mui/material/Paper';
 import * as React from 'react';
 import Grid from '@mui/material/Unstable_Grid2';
 
+function secondsToHHMMSS(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const formattedHours = String(hours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(seconds).padStart(2, '0');
+
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}
+
 /**
  * Given instructions prop, return a column-styled accordion of instructions
  * @param props - requires instructions prop... instructions prop is an array of JSON objects of
@@ -28,18 +40,20 @@ export default function RecipeInstructionsAccordion(props) {
                 >
                     <Accordion key={index}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography>{`Instruction #${instruction.stepNumber}`}</Typography>
+                            <Typography>{`Instruction #${instruction.step_number}`}</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                             <Typography sx={{ mb: 6 }}>{instruction.instruction}</Typography>
                             <Typography
                                 sx={{ mb: 0.5 }}
                                 align="center"
-                            >{`Cooking Time: ${instruction.cookingTime}`}</Typography>
+                            >{`Cooking Time: ${secondsToHHMMSS(
+                                instruction.cooking_time
+                            )}`}</Typography>
                             <Typography
                                 sx={{ mb: 3 }}
                                 align="center"
-                            >{`Prep. Time: ${instruction.prepTime}`}</Typography>
+                            >{`Prep. Time: ${secondsToHHMMSS(instruction.prep_time)}`}</Typography>
                             {instruction.instructionImages.length === 0 ? (
                                 <div></div>
                             ) : (

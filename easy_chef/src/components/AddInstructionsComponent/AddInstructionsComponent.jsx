@@ -32,9 +32,9 @@ export default function AddInstructionsComponent({ instructions, setInstructions
     const handleAddInstruction = () => {
         const newInstruction = {
             instruction: instructionBody,
-            stepNumber: instructionNum,
-            cookingTime,
-            prepTime,
+            step_number: instructionNum,
+            cooking_time: cookingTime,
+            prep_time: prepTime,
             instructionImages: imagesEncoded
         };
         setInstructions((prevState) => [...prevState, newInstruction]);

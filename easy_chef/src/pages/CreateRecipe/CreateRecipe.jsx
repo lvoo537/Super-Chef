@@ -56,6 +56,8 @@ function CreateRecipe() {
             .post('/recipes/create/', dataToSend)
             .then((response) => {
                 // From response, if successful, get the recipe ID. So update the recipe context.
+                console.log('SUCCESS');
+                navigate('/');
             })
             .catch((error) => {});
     };
