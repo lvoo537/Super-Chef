@@ -242,6 +242,7 @@ class UpdateRecipe(APIView):
         response_data = {'Success message': 'Updated the Recipe successfully.'}
         return Response(response_data, status=201)
 
+
 class CreateView(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
 
@@ -266,6 +267,7 @@ class CreateView(APIView):
         if request.data['prep_time']:
             prep_time = timedelta(minutes=request.data['prep_time'])
             request.data['prep_time'] = prep_time
+            print("sa")
         request.data['owner'] = request.user.id
         recipe_serializer = RecipeSerializer(data=request.data)
 
