@@ -5,6 +5,8 @@ import { useParams } from 'react-router-dom';
 import fetchBackend from '../../Utils/fetchBackend';
 import Carousel from '../../components/Carousel/Carousel';
 import './recipedetails.css';
+import StarIcon from '@mui/icons-material/Star';
+import Box from '@mui/material/Box';
 
 function RecipeDetailsPage() {
     const { recipeId } = useParams();
@@ -12,7 +14,8 @@ function RecipeDetailsPage() {
     const [data, setData] = useState([]);
     const [imageName, setImageName] = useState('');
     const [imagesEncoded, setImagesEncoded] = useState([]);
-
+    const [value, setValue] = React.useState(0);
+    const [hover, setHover] = React.useState(-1);
     // Handle login form submission
     // const handleLogin = async (event = undefined) => {
     //     if (event) {
@@ -89,7 +92,7 @@ function RecipeDetailsPage() {
     const getMyRating = async () => {
         const token = localStorage.getItem('access');
         const response = await fetch(
-            `http://127.0.0.1:8000/recipes/${recipeId}/retrieve-recipe-files/`,
+            `http://localhost:8000/social-media/${recipeId}/retrieve-rating/`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -99,12 +102,32 @@ function RecipeDetailsPage() {
 
         if (response.ok) {
             const json = await response.json();
-            const files = json.files;
-            encodeImages(files); // pass files to encodeImages
+            if (json.error) {
+                setValue(0);
+            } else {
+                setValue(json.rating);
+            }
         } else {
             console.log('Response not ok:', response);
         }
     };
+
+    const labels = {
+        0.5: 'Useless',
+        1: 'Useless+',
+        1.5: 'Poor',
+        2: 'Poor+',
+        2.5: 'Ok',
+        3: 'Ok+',
+        3.5: 'Good',
+        4: 'Good+',
+        4.5: 'Excellent',
+        5: 'Excellent+'
+    };
+
+    function getLabelText(value) {
+        return `${value} Star${value !== 1 ? 's' : ''}, ${labels[value]}`;
+    }
 
     // const encodeImagess = (files, setImageCount, setImagesEncoded) => {
     //     const numSelected = `${files.length} Files Selected`;
@@ -117,7 +140,21 @@ function RecipeDetailsPage() {
     useEffect(() => {
         handleGetData();
         handleGetImages();
+        getMyRating();
     }, []);
+
+    useEffect(() => {
+        var dataToSend = {
+            rating: value
+        };
+        fetchBackend
+            .post(`http://127.0.0.1:8000/social-media/${recipeId}/rate-recipe/`, dataToSend)
+            .then((response) => {
+                // From response, if successful, get the recipe ID. So update the recipe context.
+            })
+            .catch((error) => {});
+    }, [value]);
+
     if (data.cooking_time) {
         const timeString = data.cooking_time;
         const [hours, minutes, seconds] = timeString.split(':');
@@ -152,7 +189,12 @@ function RecipeDetailsPage() {
                     <div className="rating">
                         <Typography variant="h5">
                             Average rating:{' '}
-                            <Rating name="rating" value={5} precision={0.5} readOnly />
+                            <Rating
+                                name="rating"
+                                value={data.average_rating}
+                                precision={1}
+                                readOnly
+                            />
                         </Typography>
                     </div>
 
@@ -161,9 +203,23 @@ function RecipeDetailsPage() {
                     </div>
 
                     <div className="my-rating">
-                        <Typography variant="h5">
-                            My rating:{' '}
-                            <Rating name="My rating" value={5} precision={0.5} readOnly />
+                        <Typography variant="h5" style={{ whiteSpace: 'pre-line' }}>
+                            My rating:
+                            <Rating
+                                name="hover-feedback"
+                                value={value}
+                                precision={1}
+                                getLabelText={getLabelText}
+                                onChange={(event, newValue) => {
+                                    setValue(newValue);
+                                }}
+                                onChangeActive={(event, newHover) => {
+                                    setHover(newHover);
+                                }}
+                                emptyIcon={
+                                    <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
+                                }
+                            />
                         </Typography>
                     </div>
                 </div>
