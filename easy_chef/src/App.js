@@ -39,7 +39,7 @@ function App() {
                             </Route>
                             <Route path="/recipes/*" element={<PrivateRoute />}>
                                 <Route path="create-recipe" element={<CreateRecipe />} />
-                                <Route path="edit-recipe/:recipeId" element={<EditRecipe />} />
+                                <Route path="edit-recipe/:recipeIdPath" element={<EditRecipe />} />
                             </Route>
                             <Route
                                 path="/recipes/recipe-details/:recipeId"

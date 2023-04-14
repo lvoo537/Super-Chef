@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useRecipeContext } from '../../contexts/RecipeContext/RecipeContext';
 import { useEffect, useState } from 'react';
 import * as React from 'react';
@@ -38,8 +38,9 @@ function EditRecipe() {
     // by fetching existing recipe details from backend using current recipe ID.
     // Then, be able to update the recipe information using the current recipe ID and
     // hitting the backend endpoint.
+    const { recipeIdPath } = useParams();
     const navigate = useNavigate();
-    const { recipeId } = useRecipeContext();
+    const { recipeId, fromCard } = useRecipeContext();
     const [formError, setFormError] = useState({
         errorOccurred: false,
         errorMsg: ''
@@ -63,11 +64,13 @@ function EditRecipe() {
     const [defaultCuisineRow, setDefaultCuisineRow] = React.useState([]);
 
     const [recipeName, setRecipeName] = React.useState('');
-    const [cookingTime, setCookingTime] = React.useState(0);
-    const [prepTime, setPrepTime] = React.useState(0);
+    const [cookingTime, setCookingTime] = React.useState(undefined);
+    const [prepTime, setPrepTime] = React.useState(undefined);
     const [baseRecipe, setBaseRecipe] = React.useState('');
 
-    const getRecipeDetailsUrl = `http://localhost:8000/recipes/recipe-details/${recipeId}/`;
+    const getRecipeDetailsUrl = `http://localhost:8000/recipes/recipe-details/${
+        fromCard ? recipeId : recipeIdPath
+    }/`;
     const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
     const { data, error } = useSWR(getRecipeDetailsUrl, fetcher);
 
@@ -77,7 +80,7 @@ function EditRecipe() {
             // Assuming that data is the response data...
             setIngredients(data.ingredients.map((ingredient) => ingredient.name));
             // TODO: Get images related to recipeId
-            setImagesEncoded([]);
+            // setImagesEncoded([]);
             setInstructions(data.instructions.map((instruction) => instruction.instruction));
             // Assuming data.data.diets = [String] and data.data.cuisines = [String]
             // TODO: Double check what object data.diets[i] is
@@ -90,7 +93,7 @@ function EditRecipe() {
             setRecipeName(data.name);
             setCookingTime(data.cooking_time);
             setPrepTime(data.prep_time);
-            setBaseRecipe(data.base_recipe === null ? '' : data.base_recipe);
+            // setBaseRecipe(data.base_recipe === null ? '' : data.base_recipe);
         }
     }, [data]);
 
@@ -135,15 +138,15 @@ function EditRecipe() {
         const data = new FormData(event.currentTarget);
         // TODO: Get recipe name, cooking time, recipe images, ingredients, instructions
         const dataToSend = {
-            recipeName: data.get('recipe-name'),
-            cookingTime:
+            name: data.get('recipe-name'),
+            cooking_time:
                 data.get('cooking-time') !== ''
                     ? parseInt(data.get('cooking-time').toString())
                     : -1,
-            prepTime:
+            prep_time:
                 data.get('prep-time') !== '' ? parseInt(data.get('prep-time').toString()) : -1,
-            baseRecipe: data.get('base-recipe'),
-            recipeImages: imagesEncoded,
+            base_recipe: data.get('base-recipe'),
+            // recipeImages: imagesEncoded,
             ingredients: ingredients,
             instructions: instructions,
             cuisine: cuisines,
@@ -184,6 +187,7 @@ function EditRecipe() {
                                 id="recipe-name"
                                 label="Recipe Name"
                                 variant="outlined"
+                                focused
                                 value={recipeName}
                                 onChange={(event) => setRecipeName(event.target.value.toString())}
                             />
@@ -194,12 +198,13 @@ function EditRecipe() {
                                 id="cooking-time"
                                 label="Cooking Time"
                                 variant="outlined"
-                                type="number"
+                                type="time"
+                                focused
                                 InputProps={{ inputProps: { min: 0 } }}
-                                value={cookingTime === 0 ? undefined : cookingTime}
-                                onChange={(event) =>
-                                    setCookingTime(parseInt(event.target.value.toString()))
-                                }
+                                value={cookingTime}
+                                onChange={(event) => {
+                                    setCookingTime(event.target.value);
+                                }}
                             />
                         </Grid>
                         <Grid item xs={1}>
@@ -208,12 +213,11 @@ function EditRecipe() {
                                 id="prep-time"
                                 label="Prep Time"
                                 variant="outlined"
-                                type="number"
+                                type="time"
+                                focused
                                 InputProps={{ inputProps: { min: 0 } }}
-                                value={prepTime === 0 ? undefined : prepTime}
-                                onChange={(event) =>
-                                    setPrepTime(parseInt(event.target.value.toString()))
-                                }
+                                value={prepTime}
+                                onChange={(event) => setPrepTime(event.target.value)}
                             />
                         </Grid>
                         <Grid item xs={1} marginLeft={0} marginTop={0}>

@@ -12,7 +12,7 @@ export default function RecipeCard({ recipeImg, recipeName, recipeDescription, r
     const navigate = useNavigate();
     let recipeDescShortened = recipeDescription;
 
-    const { setRecipeId } = useRecipeContext();
+    const { setRecipeId, setFromCard } = useRecipeContext();
 
     if (recipeDescription.length <= 200) {
         recipeDescShortened = recipeDescription.substring(0, 199);
@@ -24,6 +24,7 @@ export default function RecipeCard({ recipeImg, recipeName, recipeDescription, r
     const handleEditRecipeClick = (event) => {
         event.preventDefault();
         setRecipeId(recipeId);
+        setFromCard(true);
         navigate(`/recipes/edit-recipe/${recipeId}`);
     };
 
