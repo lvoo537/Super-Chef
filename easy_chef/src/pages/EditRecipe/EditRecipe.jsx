@@ -64,8 +64,8 @@ function EditRecipe() {
     const [defaultCuisineRow, setDefaultCuisineRow] = React.useState([]);
 
     const [recipeName, setRecipeName] = React.useState('');
-    const [cookingTime, setCookingTime] = React.useState(undefined);
-    const [prepTime, setPrepTime] = React.useState(undefined);
+    const [cookingTime, setCookingTime] = React.useState(0);
+    const [prepTime, setPrepTime] = React.useState(0);
     const [baseRecipe, setBaseRecipe] = React.useState('');
 
     const getRecipeDetailsUrl = `http://localhost:8000/recipes/recipe-details/${
@@ -73,6 +73,11 @@ function EditRecipe() {
     }/`;
     const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
     const { data, error } = useSWR(getRecipeDetailsUrl, fetcher);
+
+    function timeStringToSeconds(timeString) {
+        const [hours, minutes, seconds] = timeString.split(':').map(Number);
+        return hours * 3600 + minutes * 60 + seconds;
+    }
 
     useEffect(() => {
         if (data) {
@@ -91,9 +96,9 @@ function EditRecipe() {
                 data.cuisines.map((cuisineName) => createDefaultSingleRow('Cuisines', cuisineName))
             );
             setRecipeName(data.name);
-            setCookingTime(data.cooking_time);
-            setPrepTime(data.prep_time);
-            // setBaseRecipe(data.base_recipe === null ? '' : data.base_recipe);
+            setCookingTime(timeStringToSeconds(data.cooking_time));
+            setPrepTime(timeStringToSeconds(data.prep_time));
+            setBaseRecipe(data.base_recipe === null ? '' : data.base_recipe);
         }
     }, [data]);
 
@@ -198,12 +203,13 @@ function EditRecipe() {
                                 id="cooking-time"
                                 label="Cooking Time"
                                 variant="outlined"
-                                type="time"
+                                type="text"
                                 focused
                                 InputProps={{ inputProps: { min: 0 } }}
                                 value={cookingTime}
                                 onChange={(event) => {
-                                    setCookingTime(event.target.value);
+                                    const value = event.target.value;
+                                    setCookingTime(parseInt(value));
                                 }}
                             />
                         </Grid>
@@ -213,11 +219,14 @@ function EditRecipe() {
                                 id="prep-time"
                                 label="Prep Time"
                                 variant="outlined"
-                                type="time"
+                                type="text"
                                 focused
                                 InputProps={{ inputProps: { min: 0 } }}
                                 value={prepTime}
-                                onChange={(event) => setPrepTime(event.target.value)}
+                                onChange={(event) => {
+                                    const value = event.target.value;
+                                    setPrepTime(parseInt(value));
+                                }}
                             />
                         </Grid>
                         <Grid item xs={1} marginLeft={0} marginTop={0}>
