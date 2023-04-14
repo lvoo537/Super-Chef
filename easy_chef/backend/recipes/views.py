@@ -1,3 +1,4 @@
+import base64
 from django.http import *
 from django.shortcuts import *
 from rest_framework.authentication import TokenAuthentication
@@ -545,15 +546,26 @@ class RetrieveCommentFilesView(APIView):
 
 class RetrieveRecipeFilesView(APIView):
     def get(self, request, recipe_id):
+#         recipe_files = RecipeFile.objects.filter(recipe=recipe_id)
+#         files = []
+#         for recipe_file in recipe_files:
+#             file_path = recipe_file.file.path
+#             file = open(file_path, 'rb')
+#             files.append(file)
+#
+#         response = FileResponse(files)
+#         return response
         recipe_files = RecipeFile.objects.filter(recipe=recipe_id)
         files = []
         for recipe_file in recipe_files:
             file_path = recipe_file.file.path
-            file = open(file_path, 'rb')
-            files.append(file)
+            with open(file_path, 'rb') as file:
+                encoded_file = base64.b64encode(file.read()).decode('utf-8')
+                files.append(encoded_file)
 
-        response = FileResponse(files)
-        return response
+        # Return a JSON response with the base64-encoded file data
+        data = {"files": files}
+        return JsonResponse(data)
 
 
 class RetrieveInstructionFilesView(APIView):
