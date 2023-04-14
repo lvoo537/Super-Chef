@@ -2,7 +2,10 @@ import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Stack } from '@mui/material';
 import Button from '@mui/material/Button';
-import { CreateRecipeIngredientsContext } from '../../contexts/CreateRecipeIngredientsContext/CreateRecipeIngredientsContext';
+import {
+    CreateRecipeIngredientsContext,
+    useCreateIngredientsContext
+} from '../../contexts/CreateRecipeIngredientsContext/CreateRecipeIngredientsContext';
 
 // For setting ID of row
 let idCounter = 0;
@@ -14,33 +17,35 @@ const createRow = () => {
     idCounter += 1;
     return {
         id: idCounter,
-        ingredientName: '',
+        name: '',
         quantity: 0,
-        unitOfMeasure: measurements[0]
+        unit_of_measure: measurements[0][0]
     };
 };
 
 // Measurements to be used in select tag.
 const measurements = [
-    'Grams',
-    'Kilograms',
-    'Milliliters',
-    'Liters',
-    'Teaspoon',
-    'Cup',
-    'Ounce',
-    'Pound',
-    'Pinch',
-    'Unit'
+    ['g', 'Grams'],
+    ['kg', 'Kilograms'],
+    ['ml', 'Milliliters'],
+    ['l', 'Liters'],
+    ['tsp', 'Teaspoon'],
+    ['tbsp', 'Tablespoon'],
+    ['cup', 'Cup'],
+    ['oz', 'Ounce'],
+    ['lb', 'Pound'],
+    ['pinch', 'Pinch'],
+    ['unit', 'Unit']
 ];
-
-function IngredientsTable({ width }) {
+function IngredientsTable({ width, idCounterStart }) {
     // To save ingredient info (from rows) to context
-    const { ingredients, setIngredients } = React.useContext(CreateRecipeIngredientsContext);
+    const { ingredients, setIngredients } = useCreateIngredientsContext();
+
+    if (idCounterStart !== undefined) idCounter = idCounterStart + 1;
 
     // Set default column headers and their respective attributes
     const columns = [
-        { field: 'ingredientName', headerName: 'Name', width: 500, editable: true },
+        { field: 'name', headerName: 'Name', width: 500, editable: true },
         {
             field: 'quantity',
             headerName: 'Amount',
@@ -49,7 +54,7 @@ function IngredientsTable({ width }) {
             editable: true
         },
         {
-            field: 'unitOfMeasure',
+            field: 'unit_of_measure',
             headerName: 'Measure',
             width: 90,
             editable: true,
@@ -59,7 +64,7 @@ function IngredientsTable({ width }) {
     ];
 
     // For creating new rows on table
-    const [rows, setRows] = React.useState(() => []);
+    const [rows, setRows] = React.useState(ingredients);
     const [selectedRows, setSelectedRows] = React.useState([]);
 
     const handleAddRow = () => {

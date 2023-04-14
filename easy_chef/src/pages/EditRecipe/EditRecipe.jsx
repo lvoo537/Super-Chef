@@ -79,11 +79,24 @@ function EditRecipe() {
         return hours * 3600 + minutes * 60 + seconds;
     }
 
+    let ingredientIdCounter = 0;
     useEffect(() => {
         if (data) {
             // Set states from data.data
             // Assuming that data is the response data...
-            setIngredients(data.ingredients.map((ingredient) => ingredient.name));
+            // TODO: Prefiling ingredient data into ingredient table not working
+            setIngredients(
+                data.ingredients.map((ingredient, index) => {
+                    ingredientIdCounter += 1;
+                    return {
+                        id: index,
+                        name: ingredient.name,
+                        quantity: parseInt(ingredient.quantity),
+                        unit_of_measure: ingredient.unit_of_measure
+                    };
+                })
+            );
+            // console.log(data.ingredients);
             // TODO: Get images related to recipeId
             // setImagesEncoded([]);
             setInstructions(data.instructions.map((instruction) => instruction.instruction));
@@ -277,7 +290,10 @@ function EditRecipe() {
                                     <CreateRecipeIngredientsContext.Provider
                                         value={{ ingredients, setIngredients }}
                                     >
-                                        <IngredientsTable width={750} />
+                                        <IngredientsTable
+                                            width={750}
+                                            idCounterStart={ingredientIdCounter}
+                                        />
                                     </CreateRecipeIngredientsContext.Provider>
                                 </Grid>
                                 <Grid item xs={12}>
