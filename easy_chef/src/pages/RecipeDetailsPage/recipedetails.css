@@ -1,0 +1,42 @@
+html, body {
+    background-color: #E3F0FF;
+}
+
+.image-grid{
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+}
+
+.image{
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 2%;
+}
+
+.stats{
+    display: grid;
+    /*justify-self: end;*/
+    /*justify-items: start;*/
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+    gap: 1%;
+}
+
+.likes{
+    width: 100%;
+    background-color: white;
+    /*height: 100%;*/
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 1%;
+}
+
+.rating{
+    width: 100%;
+    background-color: white;
+    /*height: 100%;*/
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 1%;
+
+}

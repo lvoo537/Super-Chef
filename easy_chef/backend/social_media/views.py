@@ -288,3 +288,15 @@ class CommentFileUploadView(APIView):
         #
         # # Return response
 
+        class RecipeUserRatingAPIView(APIView):
+            permission_classes = [IsAuthenticated]
+
+            def get(self, request, recipe_id):
+                # Get the rating for the requested recipe from the authenticated user
+                try:
+                    rating = RecipeRating.objects.get(recipe_id=recipe_id, user=request.user)
+                    serializer = RecipeRatingSerializer(rating)
+                    return Response(serializer.data)
+                except RecipeRating.DoesNotExist:
+                    return Response({'detail': 'You have not rated this recipe.'}, status=404)
+
