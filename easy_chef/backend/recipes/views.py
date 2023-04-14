@@ -259,7 +259,7 @@ class CreateView(APIView):
             except Recipe.DoesNotExist:
                 # Base recipe does not exist in the database
                 errors['base_recipe'] = 'Base recipe does not exist'
-
+#
         # Create Recipe Serializer
         if request.data['cooking_time']:
             cooking_time = timedelta(minutes=request.data['cooking_time'])
@@ -267,7 +267,8 @@ class CreateView(APIView):
         if request.data['prep_time']:
             prep_time = timedelta(minutes=request.data['prep_time'])
             request.data['prep_time'] = prep_time
-
+            print("sa")
+        request.data['owner'] = request.user.id
         recipe_serializer = RecipeSerializer(data=request.data)
 
         if recipe_serializer.is_valid():

@@ -10,7 +10,6 @@ import { TableFooter } from '@mui/material';
 import * as React from 'react';
 
 function CartIngredientTable(props) {
-    const [total, setTotal] = useState(0);
     const [maxServings, setMaxServings] = useState(0);
 
     // Call backend to get array of recipeIds of shopping cart.
@@ -18,16 +17,6 @@ function CartIngredientTable(props) {
     // [...] -> attributes
     // [...] -> api call -> [...] -> attributes
     // [ { recipeName: String, servings: number, prices: number, unit: string }, ... ]
-
-    useEffect(() => {
-        // calculate the total of prices
-        let newTotal = props.rows.reduce(
-            (acc, curr) => acc + Number(curr.price.replace('$', '')),
-            0
-        );
-        newTotal = '$' + newTotal.toFixed(2).toString();
-        setTotal(newTotal);
-    }, [props.rows]);
 
     useEffect(() => {
         // calculate the max servings
@@ -44,7 +33,6 @@ function CartIngredientTable(props) {
                         <TableCell>INGREDIENT NAMES</TableCell>
                         <TableCell align="left"> UNITS </TableCell>
                         <TableCell align="center">SERVINGS</TableCell>
-                        <TableCell align="center">PRICES</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -58,7 +46,6 @@ function CartIngredientTable(props) {
                             </TableCell>
                             <TableCell align="left">{row.unit}</TableCell>
                             <TableCell align="center">{row.servings}</TableCell>
-                            <TableCell align="center">{row.price}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -67,7 +54,6 @@ function CartIngredientTable(props) {
                         <TableCell>Total</TableCell>
                         <TableCell></TableCell>
                         <TableCell align="center">{maxServings}</TableCell>
-                        <TableCell align="center">{total}</TableCell>
                     </TableRow>
                 </TableFooter>
             </Table>

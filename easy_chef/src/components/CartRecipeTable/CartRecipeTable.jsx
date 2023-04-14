@@ -28,28 +28,21 @@ function CartRecipeTable(props) {
             renderCell: (params) => {
                 return <VirtualizedList ingredients={params.row.ingredients} itemSize={44} />;
             },
-            width: 150,
+            width: 170,
             editable: false
         },
         {
-            field: 'quantity',
-            headerName: 'Qty',
+            field: 'servingQuantity',
+            headerName: 'Servings',
             type: 'number',
-            width: 110,
-            editable: false
-        },
-        {
-            field: 'price',
-            headerName: 'Prices',
-            width: 160,
+            width: 200,
             editable: false
         },
         {
             field: 'action',
             headerName: 'Action',
-
             sortable: false,
-            width: 160
+            width: 200
         }
     ];
 
