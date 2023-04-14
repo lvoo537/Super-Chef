@@ -17,9 +17,11 @@ export default function SearchResultsPage() {
         cardId += 1;
         let desc = '';
         let name = '';
+        let recipeId = '';
         if (obj.model === 'recipes.recipe') {
             desc = `Cooking Time: ${obj.fields.cooking_time}, Likes: ${obj.fields.likes}`;
             name = 'Recipe: ' + obj.fields.name;
+            recipeId = obj.pk;
         } else if (obj.model === 'accounts.myuser') {
             desc = `Name: ${obj.fields.first_name + ' ' + obj.fields.last_name}`;
             name = 'Creator: ' + obj.fields.username;
@@ -33,6 +35,7 @@ export default function SearchResultsPage() {
                     recipeName={name}
                     recipeDescription={desc}
                     recipeImg="https://source.unsplash.com/random"
+                    recipeId={recipeId !== '' ? recipeId : undefined}
                 />
             </Grid>
         );

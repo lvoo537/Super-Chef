@@ -67,32 +67,66 @@ function EditRecipe() {
     const [prepTime, setPrepTime] = React.useState(0);
     const [baseRecipe, setBaseRecipe] = React.useState('');
 
-    const getRecipeDetailsUrl = `/recipes/edit-recipe/${recipeId}`;
+    const getRecipeDetailsUrl = `http://localhost:8000/recipes/recipe-details/${recipeId}/`;
     const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
     const { data, error } = useSWR(getRecipeDetailsUrl, fetcher);
 
     useEffect(() => {
         if (data) {
             // Set states from data.data
-            // Assuming that data.data is the response data...
-            setIngredients(data.data.ingredients);
-            setImagesEncoded(data.data.recipeImages);
-            setInstructions(data.data.instructions);
+            // Assuming that data is the response data...
+            setIngredients(data.ingredients.map((ingredient) => ingredient.name));
+            // TODO: Get images related to recipeId
+            setImagesEncoded([]);
+            setInstructions(data.instructions.map((instruction) => instruction.instruction));
             // Assuming data.data.diets = [String] and data.data.cuisines = [String]
+            // TODO: Double check what object data.diets[i] is
             setDefaultDietRow(
-                data.data.diets.map((dietName) => createDefaultSingleRow('Diets', dietName))
+                data.diets.map((dietName) => createDefaultSingleRow('Diets', dietName))
             );
             setDefaultCuisineRow(
-                data.data.cuisines.map((cuisineName) =>
-                    createDefaultSingleRow('Cuisines', cuisineName)
-                )
+                data.cuisines.map((cuisineName) => createDefaultSingleRow('Cuisines', cuisineName))
             );
-            setRecipeName(data.data.recipeName);
-            setCookingTime(data.data.cookingTime);
-            setPrepTime(data.data.prepTime);
-            setBaseRecipe(data.data.baseRecipe);
+            setRecipeName(data.name);
+            setCookingTime(data.cooking_time);
+            setPrepTime(data.prep_time);
+            setBaseRecipe(data.base_recipe === null ? '' : data.base_recipe);
         }
     }, [data]);
+
+    if (error && error.status === 404) {
+        return (
+            <Grid container spacing={2} sx={{ textAlign: 'center' }}>
+                <Grid item xs={12}>
+                    <Navbar></Navbar>
+                </Grid>
+                <Grid item xs={12}>
+                    <Box>
+                        <Typography variant="h5">Recipe Not Found</Typography>
+                    </Box>
+                </Grid>
+            </Grid>
+        );
+    } else if (error) {
+        return (
+            <Grid container spacing={2} sx={{ textAlign: 'center' }}>
+                <Grid item xs={12}>
+                    <Navbar></Navbar>
+                </Grid>
+                <Grid item xs={12}>
+                    <Box sx={{ mt: 8 }}>
+                        <Typography variant="h5">Failed to get recipe details...</Typography>
+                        <Typography variant="body1" sx={{ mt: 2, color: 'red' }}>
+                            {`Error Message: ${error.response.statusText}`}
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: 'red' }}>
+                            {`Error Status Code: ${error.response.status}`}
+                        </Typography>
+                    </Box>
+                </Grid>
+            </Grid>
+        );
+    }
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -119,7 +153,7 @@ function EditRecipe() {
         console.log(dataToSend);
 
         fetchBackend
-            .post('/recipes/create-recipe', dataToSend)
+            .post(`/recipes/${recipeId}/update-recipe/`, dataToSend)
             .then((response) => {
                 // From response, if successful, get the recipe ID. So update the recipe context.
             })

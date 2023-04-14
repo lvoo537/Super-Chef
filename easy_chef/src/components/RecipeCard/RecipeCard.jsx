@@ -3,10 +3,16 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
-import { CardActionArea } from '@mui/material';
+import { CardActionArea, CardActions } from '@mui/material';
+import Button from '@mui/material/Button';
+import { useNavigate } from 'react-router-dom';
+import { useRecipeContext } from '../../contexts/RecipeContext/RecipeContext';
 
-export default function RecipeCard({ recipeImg, recipeName, recipeDescription }) {
+export default function RecipeCard({ recipeImg, recipeName, recipeDescription, recipeId }) {
+    const navigate = useNavigate();
     let recipeDescShortened = recipeDescription;
+
+    const { setRecipeId } = useRecipeContext();
 
     if (recipeDescription.length <= 200) {
         recipeDescShortened = recipeDescription.substring(0, 199);
@@ -15,14 +21,15 @@ export default function RecipeCard({ recipeImg, recipeName, recipeDescription })
     // Call backend API to get recipe details given the recipe name (or id ?).
     // Create frontend page for recipe details page for each recipe.
     // Set the window.location.href to the url of the frontend page of given recipe name.
+    const handleEditRecipeClick = (event) => {
+        event.preventDefault();
+        setRecipeId(recipeId);
+        navigate(`/recipes/edit-recipe/${recipeId}`);
+    };
 
     return (
         <Card sx={{ width: 345 }} margin="auto">
-            <CardActionArea
-                onClick={() => {
-                    window.location.href = '#';
-                }}
-            >
+            <CardActionArea>
                 <CardMedia
                     component="img"
                     height="140"
@@ -41,6 +48,15 @@ export default function RecipeCard({ recipeImg, recipeName, recipeDescription })
                         {recipeDescShortened}
                     </Typography>
                 </CardContent>
+                {recipeId === undefined ? (
+                    <div></div>
+                ) : (
+                    <CardActions>
+                        <Button size="small" onClick={handleEditRecipeClick}>
+                            Edit Recipe
+                        </Button>
+                    </CardActions>
+                )}
             </CardActionArea>
         </Card>
     );
