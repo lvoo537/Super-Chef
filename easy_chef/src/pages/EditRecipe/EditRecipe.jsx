@@ -89,7 +89,7 @@ function EditRecipe() {
                 data.ingredients.map((ingredient, index) => {
                     ingredientIdCounter += 1;
                     return {
-                        id: index,
+                        id: `id-from-db-${ingredientIdCounter}`,
                         name: ingredient.name,
                         quantity: parseInt(ingredient.quantity),
                         unit_of_measure: ingredient.unit_of_measure
@@ -290,10 +290,7 @@ function EditRecipe() {
                                     <CreateRecipeIngredientsContext.Provider
                                         value={{ ingredients, setIngredients }}
                                     >
-                                        <IngredientsTable
-                                            width={750}
-                                            idCounterStart={ingredientIdCounter}
-                                        />
+                                        <IngredientsTable width={750} />
                                     </CreateRecipeIngredientsContext.Provider>
                                 </Grid>
                                 <Grid item xs={12}>
