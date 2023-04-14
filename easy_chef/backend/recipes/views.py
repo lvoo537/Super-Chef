@@ -267,7 +267,6 @@ class CreateView(APIView):
         if request.data['prep_time']:
             prep_time = timedelta(minutes=request.data['prep_time'])
             request.data['prep_time'] = prep_time
-            print("sa")
         request.data['owner'] = request.user.id
         recipe_serializer = RecipeSerializer(data=request.data)
 

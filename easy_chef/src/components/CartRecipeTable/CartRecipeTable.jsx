@@ -4,9 +4,9 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { DataGrid } from '@mui/x-data-grid';
 import './CartRecipeTable.css';
-import MultipleSelectNative from './MultipleSelectNative/MultipleSelectNative';
 import VirtualizedList from './MultipleSelectNative/MultipleSelectNative';
-import renderRow from './MultipleSelectNative/MultipleSelectNative';
+import GroupedButtons from './GroupedButtons/GroupedButtons';
+
 function CartRecipeTable(props) {
     const columns = [
         // { field: 'id', headerName: 'ID', width: 90 },
@@ -36,6 +36,9 @@ function CartRecipeTable(props) {
             headerName: 'Servings',
             type: 'number',
             width: 200,
+            renderCell: (params) => {
+                return <GroupedButtons> </GroupedButtons>;
+            },
             editable: false
         },
         {
