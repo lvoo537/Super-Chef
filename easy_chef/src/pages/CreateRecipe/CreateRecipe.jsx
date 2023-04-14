@@ -15,7 +15,7 @@ import DietsCuisineTable from '../../components/DietsCuisineTable/DietsCuisineTa
 
 function CreateRecipe() {
     const navigate = useNavigate();
-    const { setRecipeId } = useRecipeContext();
+    const { recipeId, setRecipeId } = useRecipeContext();
     const [formError, setFormError] = useState({
         errorOccurred: false,
         errorMsg: ''
@@ -23,6 +23,7 @@ function CreateRecipe() {
     const [ingredients, setIngredients] = useState([]);
     const [imageName, setImageName] = useState('');
     const [imagesEncoded, setImagesEncoded] = useState([]);
+    const [recipeImages, setRecipeImages] = useState([]);
     const [instructions, setInstructions] = useState([]);
 
     const [diets, setDiets] = React.useState([]);
@@ -43,7 +44,6 @@ function CreateRecipe() {
             prep_time:
                 data.get('prep-time') !== '' ? parseInt(data.get('prep-time').toString()) : -1,
             base_recipe: data.get('base-recipe'),
-            photos_or_videos: imagesEncoded,
             ingredients: ingredients,
             instructions: instructions,
             cuisine: cuisines,
@@ -55,14 +55,27 @@ function CreateRecipe() {
         fetchBackend
             .post('/recipes/create/', dataToSend)
             .then((response) => {
-                // From response, if successful, get the recipe ID. So update the recipe context.
                 console.log('SUCCESS');
                 navigate('/');
+                // TODO: From response, if successful, get the recipe ID. So update the recipe context.
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
+        // Make sure this is called when recipe context is set.
+        // TODO: send recipe images using recipeImages state.
+        fetchBackend
+            .post(`/recipes/${recipeId}/upload-recipe/`)
+            .then((response) => {
+                //
             })
             .catch((error) => {});
     };
 
     const handleImages = (event) => {
+        const files = Array.from(event.target.files);
+        setRecipeImages(files);
         encodeImages(event, setImageName, setImagesEncoded);
     };
 
