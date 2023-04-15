@@ -13,30 +13,58 @@ import {
     Stack,
     Typography
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import useSWR from 'swr';
+import fetchBackend from '../../Utils/fetchBackend';
 
 function MainPage() {
     // recipeCards is a list of RecipeCards
     // recipeName, recipeDescription, recipeImg should all be fetched by
     // calling the backend endpoint to filter by favorites/likes.
-    const recipeCards = [];
+    const [recipeCards, setRecipeCards] = useState([]);
 
-    for (let i = 0; i < 12; i++) {
-        recipeCards.push(
-            <Grid key={i}>
-                <RecipeCard
-                    recipeName={`Recipe ${i + 1}`}
-                    recipeDescription="Recipe Description"
-                    recipeImg={'https://source.unsplash.com/random'}
-                />
-            </Grid>
-        );
-    }
+    // for (let i = 0; i < 12; i++) {
+    //     recipeCards.push(
+    //         <Grid key={i}>
+    //             <RecipeCard
+    //                 recipeName={`Recipe ${i + 1}`}
+    //                 recipeDescription="Recipe Description"
+    //                 recipeImg={'https://source.unsplash.com/random'}
+    //             />
+    //         </Grid>
+    //     );
+    // }
 
     const [currPage, setCurrPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [filterState, setFilterState] = useState('favorites');
+
+    const filterByRating = filterState === 'rating';
+    const getRecipesOnFilterUrl = `/social-media/popular-recipes/?rating=${filterByRating}&favorites=${!filterByRating}&page=${currPage}`;
+    const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
+    const { data, error } = useSWR(getRecipesOnFilterUrl, fetcher);
+
+    useEffect(() => {
+        if (data) {
+            console.log(data);
+            setTotalPages(data.count);
+            setRecipeCards(
+                data.results.map((recipe, index) => {
+                    return (
+                        <Grid key={`recipe-get-${index}`}>
+                            <RecipeCard
+                                recipeName={recipe.name}
+                                recipeDescription={`Cooking Time: ${recipe.cooking_time}, Prep. Time: ${recipe.prep_time}`}
+                                recipeImg="https://source.unsplash.com/random"
+                                recipeId={recipe.id}
+                            />
+                        </Grid>
+                    );
+                })
+            );
+        }
+    }, [data]);
 
     return (
         <Grid container spacing={2} alignItems="center" justifyContent="center">

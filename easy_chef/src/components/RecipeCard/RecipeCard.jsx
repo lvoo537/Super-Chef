@@ -41,7 +41,7 @@ export default function RecipeCard({ recipeImg, recipeName, recipeDescription, r
                     }
                     alt="recipe image"
                 />
-                <CardContent>
+                <CardContent sx={{ minHeight: 100 }}>
                     <Typography gutterBottom variant="h5" component="div">
                         {recipeName}
                     </Typography>
