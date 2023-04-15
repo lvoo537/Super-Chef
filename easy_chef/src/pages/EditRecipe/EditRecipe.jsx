@@ -2,7 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useRecipeContext } from '../../contexts/RecipeContext/RecipeContext';
 import { useEffect, useState } from 'react';
 import * as React from 'react';
-import fetchBackend from '../../Utils/fetchBackend';
+import fetchBackend, { fetchBackendImg } from '../../Utils/fetchBackend';
 import encodeImages, { encodeImagesFromDb } from '../../Utils/encodeImages';
 import { Box, CircularProgress, Grid, TextField, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
@@ -79,7 +79,7 @@ function EditRecipe() {
 
     function timeStringToMintutes(timeString) {
         const [hours, minutes, seconds] = timeString.split(':').map(Number);
-        return hours * 60 + minutes + seconds / 60;
+        return parseInt(hours * 60 + minutes + seconds / 60);
     }
 
     let ingredientIdCounter = 0;
@@ -102,8 +102,8 @@ function EditRecipe() {
                 .then(async (res) => {
                     // console.log(res.data);
                     console.log('Successfully retrieved recipe images');
-                    const encodedImages = encodeImagesFromDb(res.data.files);
-                    setImagesEncoded(await encodedImages);
+                    const encodedImages = await encodeImagesFromDb(res.data.files);
+                    setImagesEncoded(encodedImages);
                 })
                 .catch((err) => {
                     console.log(err);
@@ -113,26 +113,30 @@ function EditRecipe() {
             if (instructionsResponse.length === 0) setInstrImagesLoaded(true);
 
             Promise.all(
-                instructionsResponse.map((instr) =>
-                    fetchBackend
-                        .get(`/recipes/${instr.id}/retrieve-instruction-files`)
-                        .then((res) => {
-                            console.log(
-                                `Successfully retrieved instruction images for ${instr.id}`
-                            );
-                            return encodeImagesFromDb(res.data.files);
-                        })
-                        .catch((err) => {
-                            console.log(err);
-                            return [];
-                        })
-                )
+                instructionsResponse.map(async (instr) => {
+                    try {
+                        const res = await fetchBackend.get(
+                            `/recipes/${instr.id}/retrieve-instruction-files`
+                        );
+                        console.log(res.data);
+                        console.log(`Successfully retrieved instruction images for ${instr.id}`);
+                        const encodedImages = await encodeImagesFromDb(res.data.files);
+                        console.log('======================');
+                        instr.instructionImagesEncoded = encodedImages;
+                        return encodedImages;
+                    } catch (err) {
+                        console.log(err);
+                        return [];
+                    }
+                })
             ).then((encodedImagesArray) => {
                 const imagesEncoded = encodedImagesArray.flat();
                 setInstructions(instructionsResponse);
                 setInstrImagesEncoded(imagesEncoded);
+                console.log(instructions);
                 setInstrImagesLoaded(true);
             });
+
             setDefaultDietRow(data.diets.map((diet) => createDefaultSingleRow('Diets', diet.name)));
             setDefaultCuisineRow(
                 data.cuisines.map((cuisine) => createDefaultSingleRow('Cuisines', cuisine.name))
@@ -193,16 +197,25 @@ function EditRecipe() {
             name: data.get('recipe-name'),
             // base_recipe: data.get('base-recipe'),
             ingredients: ingredients,
-            instructions: instructions,
             cuisine: cuisines,
             diets: diets,
             owner
         };
-        if (data.get('cooking-time') !== '') {
-            dataToSend.cooking_time = parseInt(data.get('cooking-time'));
+        const instrReq = [];
+        for (let instr of instructions) {
+            instrReq.push({
+                cooking_time: instr.cooking_time,
+                instruction: instr.instruction,
+                prep_time: instr.prep_time,
+                step_number: instr.step_number
+            });
         }
-        if (data.get('prep-time') !== '') {
-            dataToSend.prep_time = parseInt(data.get('prep-time'));
+        dataToSend.instructions = instrReq;
+        if (cookingTime !== '') {
+            dataToSend.cooking_time = cookingTime;
+        }
+        if (prepTime !== '') {
+            dataToSend.prep_time = prepTime;
         }
 
         console.log(dataToSend);
@@ -211,7 +224,42 @@ function EditRecipe() {
             .post(`/recipes/${fromCard ? recipeId : recipeIdPath}/update-recipe/`, dataToSend)
             .then((response) => {
                 console.log('Successfully edited recipe');
-                navigate('/');
+                console.log(response);
+                fetchBackend
+                    .get(`/recipes/recipe-details/${fromCard ? recipeId : recipeIdPath}/`)
+                    .then((response) => {
+                        console.log('Successfully retrieved recipe details');
+                        const detailsInstructions = response.data.instructions;
+                        for (let instr of detailsInstructions) {
+                            for (let instruction of instructions) {
+                                if (instruction.step_number === instr.step_number) {
+                                    const formData = new FormData();
+                                    if (instruction.instructionImages) {
+                                        instruction.instructionImages.map((image, index) => {
+                                            formData.append('file' + index, image);
+                                        });
+                                    }
+                                    console.log(formData);
+                                    fetchBackendImg
+                                        .post(`/recipes/${instr.id}/upload-instruction/`, formData)
+                                        .then((response) => {
+                                            console.log(response);
+                                            console.log(
+                                                `Successfully uploaded instruction id: ${instr.id}`
+                                            );
+                                            navigate('/');
+                                        })
+                                        .catch((error) => {
+                                            console.log(error);
+                                        });
+                                    break;
+                                }
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
             })
             .catch((error) => {
                 console.log(error);

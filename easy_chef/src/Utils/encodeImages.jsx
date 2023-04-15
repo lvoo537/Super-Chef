@@ -21,29 +21,30 @@ const encodeImages = (event, setImageCount, setImagesEncoded) => {
     }
 };
 
-export const encodeImagesFromDb = async (files) => {
-    const encodedImages = [];
-    for (let file of files) {
-        const base64String = file; // replace with your base64 string
-        const byteCharacters = atob(base64String);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        // const blob = new Blob([byteArray], { type: 'image/png' });
-        const blob = new Blob([byteArray]);
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        encodedImages.push(
-            await new Promise((resolve) => {
+export const encodeImagesFromDb = (files) => {
+    const promises = files.map(
+        (file) =>
+            new Promise((resolve, reject) => {
+                const base64String = file; // replace with your base64 string
+                const byteCharacters = atob(base64String);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                // const blob = new Blob([byteArray], { type: 'image/png' });
+                const blob = new Blob([byteArray]);
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
                 reader.onloadend = () => {
                     resolve(reader.result);
                 };
+                reader.onerror = () => {
+                    reject(reader.error);
+                };
             })
-        );
-    }
-    return encodedImages;
+    );
+    return Promise.all(promises);
 };
 
 export default encodeImages;
