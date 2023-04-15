@@ -38,7 +38,7 @@ function MyRecipes() {
             </Grid>
             <Grid item xs={12}>
                 {/** My Recipes Content Here  */}
-                <Box sx={{ width: '100%' }}>
+                <Box display="flex" justifyContent="center" flexDirection="column" marginX={25}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 1 }}>
                         <Tabs
                             value={value}
