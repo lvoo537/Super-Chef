@@ -10,7 +10,7 @@ import { TableFooter } from '@mui/material';
 import * as React from 'react';
 
 function CartIngredientTable(props) {
-    const [maxServings, setMaxServings] = useState(0);
+    // const [maxServings, setMaxServings] = useState(0);
 
     // Call backend to get array of recipeIds of shopping cart.
     // For each recipeId, call backend to get recipe information.
@@ -18,12 +18,12 @@ function CartIngredientTable(props) {
     // [...] -> api call -> [...] -> attributes
     // [ { recipeName: String, servings: number, prices: number, unit: string }, ... ]
 
-    useEffect(() => {
-        // calculate the max servings
-
-        const newMaxServings = props.rows.reduce((acc, curr) => Math.max(acc, curr.servings), 0);
-        setMaxServings(newMaxServings);
-    }, [props.rows]);
+    // useEffect(() => {
+    //     // calculate the max servings
+    //
+    //     const newMaxServings = props.rows.reduce((acc, curr) => Math.max(acc, curr.servings), 0);
+    //     setMaxServings(newMaxServings);
+    // }, [props.rows]);
 
     return (
         <TableContainer component={Paper}>
@@ -31,8 +31,8 @@ function CartIngredientTable(props) {
                 <TableHead>
                     <TableRow>
                         <TableCell>INGREDIENT NAMES</TableCell>
-                        <TableCell align="left"> UNITS </TableCell>
-                        <TableCell align="center">SERVINGS</TableCell>
+                        <TableCell align="left"> Qty </TableCell>
+                        <TableCell align="center">UNITS</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -44,18 +44,11 @@ function CartIngredientTable(props) {
                             <TableCell component="th" scope="row">
                                 {row.name}
                             </TableCell>
-                            <TableCell align="left">{row.unit}</TableCell>
-                            <TableCell align="center">{row.servings}</TableCell>
+                            <TableCell align="left">{row.quantity}</TableCell>
+                            <TableCell align="center">{row.unit}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
-                <TableFooter>
-                    <TableRow>
-                        <TableCell>Total</TableCell>
-                        <TableCell></TableCell>
-                        <TableCell align="center">{maxServings}</TableCell>
-                    </TableRow>
-                </TableFooter>
             </Table>
         </TableContainer>
     );

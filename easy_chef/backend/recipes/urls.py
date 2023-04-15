@@ -10,7 +10,7 @@ urlpatterns = [
     path('<int:instruction_id>/update-instruction-files/', InstructionFileUpdate.as_view()),
     path('recipe-details/<int:recipe_id>/', RecipeDetails.as_view(), name='recipe_details'),
     path('shopping-list/', ShoppingLists.as_view(), name='shopping_list'),
-    path('update-recipe-servings', UpdateRecipeServings.as_view(), name='update_recipe_servings'),
+    path('<int:recipe_id>/update-recipe-servings', UpdateRecipeServings.as_view(), name='update_recipe_servings'),
     path('<int:recipe_id>/upload-recipe/', RecipeFileUpload.as_view()),
     path('<int:instruction_id>/upload-instruction/', InstructionFileUpload.as_view()),
     path('<int:instruction_id>/retrieve-instruction-files/', RetrieveInstructionFilesView.as_view()),

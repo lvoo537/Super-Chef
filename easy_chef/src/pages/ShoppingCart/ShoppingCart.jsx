@@ -12,22 +12,22 @@ import Navbar from '../../components/Navbar/Navbar';
 import CartIngredientTable from '../../components/CartIngredientTable/CartIngredientTable';
 import CartRecipeTable from '../../components/CartRecipeTable/CartRecipeTable';
 
-function createIngredientData(name, unit, servings) {
-    return { name, unit, servings };
-}
-
-const ingredientRows = [
-    createIngredientData('Flour', '4 ½ cups', 3),
-    createIngredientData('Sugar', '1 ½ cups', 3),
-    createIngredientData('Salt', '1 ½ teaspoons', 3),
-    createIngredientData('Baking powder', '1 ½ teaspoons', 3),
-    createIngredientData('Baking soda', '1 ½ teaspoons', 3),
-    createIngredientData('Butter', '1 cup', 3),
-    createIngredientData('Eggs', '2', 3),
-    createIngredientData('Vanilla extract', '1 teaspoon', 3),
-    createIngredientData('Milk', '1 cup', 3),
-    createIngredientData('Chocolate chips', '1 cup', 3)
-];
+// function createIngredientData(name, unit, servings) {
+//     return { name, unit, servings };
+// }
+//
+// const ingredientRows = [
+//     createIngredientData('Flour', '4 ½ cups', 3),
+//     createIngredientData('Sugar', '1 ½ cups', 3),
+//     createIngredientData('Salt', '1 ½ teaspoons', 3),
+//     createIngredientData('Baking powder', '1 ½ teaspoons', 3),
+//     createIngredientData('Baking soda', '1 ½ teaspoons', 3),
+//     createIngredientData('Butter', '1 cup', 3),
+//     createIngredientData('Eggs', '2', 3),
+//     createIngredientData('Vanilla extract', '1 teaspoon', 3),
+//     createIngredientData('Milk', '1 cup', 3),
+//     createIngredientData('Chocolate chips', '1 cup', 3)
+// ];
 
 // const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
 // const urlForGet = `/recipes/shopping-list/`; // where recipeId is the state from context
@@ -48,7 +48,8 @@ const ingredientRows = [
 function ShoppingCart() {
     const navigate = useNavigate();
     const [recipeRows, setRecipeRows] = useState([]);
-
+    const [ingredientRows, setIngredientRows] = useState([]);
+    const [changed, setChanged] = useState(false);
     useEffect(() => {
         fetchBackend
             .get(`/recipes/shopping-list/`)
@@ -66,12 +67,20 @@ function ShoppingCart() {
                             ingredient.unit_of_measure
                     )
                 }));
+                const formattedIngredients = res.data['ingredients'].map((ingredient, index) => ({
+                    id: ingredient.id,
+                    name: ingredient.name,
+                    quantity: ingredient.amount,
+                    unit: ingredient.unit_of_measure
+                }));
                 setRecipeRows(formattedRecipes);
+                setIngredientRows(formattedIngredients);
+                setChanged(false);
             })
             .catch((error) => {
                 console.log(error);
             });
-    }, []);
+    }, [changed]);
 
     return (
         <Grid container spacing={2} sx={{ textAlign: 'center' }}>
@@ -79,10 +88,14 @@ function ShoppingCart() {
                 <Navbar></Navbar>
             </Grid>
             <Grid item xs={6}>
-                <CartRecipeTable rows={recipeRows} setRows={setRecipeRows} />
+                <CartRecipeTable
+                    rows={recipeRows}
+                    setRows={setRecipeRows}
+                    setChangeMade={setChanged}
+                />
             </Grid>
             <Grid item xs={5}>
-                <CartIngredientTable rows={ingredientRows} />
+                <CartIngredientTable rows={ingredientRows} setRows={setIngredientRows} />
             </Grid>
         </Grid>
     );

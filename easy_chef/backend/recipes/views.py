@@ -719,32 +719,58 @@ class UpdateRecipeServings(APIView):
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticated, IsTokenValid]
 
-    def get_queryset(self):
-        recipe_name = self.request.GET.get('recipe_name', None)
-        username = self.request.GET.get('username', None)
-        if username and recipe_name:
-            return Recipe.objects.filter(name=recipe_name, owner__username=username)
-        return None
+#     def get_queryset(self):
+#         recipe_id = self.kwargs.get('recipe_id')
+#
+# #         recipe_name = self.request.GET.get('recipe_name', None)
+# #         username = request.user
+#         if recipe_id:
+#             return Recipe.objects.filter(id=recipe_id)
+#         return None
+#
+#     def get_object(self):
+#         queryset = self.get_queryset()
+#         if queryset:
+#             return queryset.first()
 
-    def get_object(self):
-        queryset = self.get_queryset()
-        if queryset:
-            return queryset.first()
+    def post(self, request, recipe_id):
+        user = request.user
+        try:
+            recipe = Recipe.objects.get(id=recipe_id)
 
-    def put(self, request):
-        username = self.request.GET.get('username', None)
-        if not username:
-            return HttpResponseBadRequest("Username is required")
-        user = get_object_or_404(MyUser, username=username)
-        if user.username != request.user.username:
-            return HttpResponseForbidden("You are not allowed to update this recipe")
-        if not self.get_queryset():
-            return HttpResponseBadRequest("Recipe does not exist or is not given as query")
+        except Recipe.DoesNotExist:
+            return Response(
+                {'Error': f'Recipe with id {recipe_id} does not exist'},
+                status=400)
 
-        instance = self.get_object()
-        amount = self.request.GET.get('amount', None)
-        if amount is None:
-            return HttpResponseBadRequest("Amount is required")
-        instance.servings = amount
-        instance.save()
-        return HttpResponse(status=200)
+        servings = request.data.get('servings', None)
+        servings = int(servings)
+        if servings is None:
+            return Response({'Error': f'Servings is required'}, status=400)
+
+        ingredients = Ingredient.objects.filter(recipes=recipe)
+
+        for ingredient in ingredients:
+            if servings > recipe.servings:
+                print(ingredient.quantity)
+                ingredient.quantity = ingredient.quantity * 2
+                ingredient.save()
+                print(ingredient.quantity)
+            elif servings < recipe.servings:
+#                 print(ingredient.quantity)
+                ingredient.quantity = ingredient.quantity // 2
+                ingredient.save()
+            else:
+                return Response(status=200)
+        recipe.servings = servings
+        recipe.save()
+        return Response({"message": "Successfully updated recipe servings."}, status=200)
+#         instance = self.get_object()
+#         amount = self.request.GET.get('amount', None)
+
+#         if amount is None:
+#             return response("Amount is required", status=400)
+#         instance.servings = amount
+#         instance.save()
+#         return HttpResponse(status=200)
+

@@ -30,6 +30,7 @@ function CartRecipeTable(props) {
     const handleClick = (id) => {
         props.setRows((rows) => rows.filter((row) => row.id !== id));
         setDeletedRows([...deletedRows, id]);
+        props.setChangeMade(true);
     };
 
     useEffect(() => {
@@ -96,7 +97,13 @@ function CartRecipeTable(props) {
             type: 'number',
             width: 160,
             renderCell: (params) => {
-                return <GroupedButtons servings={params.value} />;
+                return (
+                    <GroupedButtons
+                        servings={params.value}
+                        recipeId={params.row.id}
+                        setChangeMade={props.setChangeMade}
+                    />
+                );
             },
             editable: false
         },
