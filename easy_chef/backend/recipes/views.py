@@ -555,6 +555,15 @@ class RetrieveCommentFilesView(APIView):
 
 class RetrieveRecipeFilesView(APIView):
     def get(self, request, recipe_id):
+#         recipe_files = RecipeFile.objects.filter(recipe=recipe_id)
+#         files = []
+#         for recipe_file in recipe_files:
+#             file_path = recipe_file.file.path
+#             file = open(file_path, 'rb')
+#             files.append(file)
+#
+#         response = FileResponse(files)
+#         return response
         recipe_files = RecipeFile.objects.filter(recipe=recipe_id)
         files = []
         for recipe_file in recipe_files:
@@ -562,8 +571,7 @@ class RetrieveRecipeFilesView(APIView):
             with open(file_path, 'rb') as file:
                 encoded_file = base64.b64encode(file.read()).decode('utf-8')
                 files.append(encoded_file)
-
-
+        # Return a JSON response with the base64-encoded file data
         data = {"files": files}
         return JsonResponse(data)
 
@@ -618,7 +626,7 @@ class ShoppingLists(APIView):
     def get(self, request):
 
         user = request.user
-
+        print(user)
         if user is None:
             return HttpResponseBadRequest("User not found")
 
@@ -632,18 +640,21 @@ class ShoppingLists(APIView):
         recipes = shopping_list.recipes.all()
         if recipes is None:
             return HttpResponseBadRequest("List of recipes are required")
-        result_json = {'id': []}
 
-        for recipe in recipes:
-            result_json['id'].append(recipe.id)
-            # result_json[recipe.name] = {}
-            # for ingredient in recipe.ingredients.all():
-            #     result_json[recipe.name][ingredient.name] = {
-            #         'amount': ingredient.quantity,
-            #         'unit_of_measure': ingredient.unit_of_measure
-            #     }
-            # result_json[recipe.name]['servings'] = recipe.servings
-        return JsonResponse(result_json, status=200)
+        serializer = RecipeSerializer(recipes, many=True)
+        result_json = {'recipes': serializer.data}
+        return Response(result_json)
+
+#         for recipe in recipes:
+#             result_json['id'].append(recipe.id)
+#             # result_json[recipe.name] = {}
+#             # for ingredient in recipe.ingredients.all():
+#             #     result_json[recipe.name][ingredient.name] = {
+#             #         'amount': ingredient.quantity,
+#             #         'unit_of_measure': ingredient.unit_of_measure
+#             #     }
+#             # result_json[recipe.name]['servings'] = recipe.servings
+#         return JsonResponse(result_json, status=200)
 
 
 class UpdateRecipeServings(APIView):

@@ -16,3 +16,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class RateRecipeSerializer:
     pass
+
+class RecipeRatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = '__all__'

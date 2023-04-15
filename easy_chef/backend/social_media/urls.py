@@ -3,6 +3,7 @@ from social_media.views import *
 
 urlpatterns = [
     path('<int:recipe_id>/rate-recipe/', RateRecipeView.as_view(), name='rate_recipe'),
+    path('<int:recipe_id>/retrieve-rating/', RetrieveRating.as_view(), name='retrieve rating'),
     path('<int:recipe_id>/favorite-recipe/', FavoriteRecipeView.as_view(), name='favorite_recipe'),
     path('<int:recipe_id>/unfavorite-recipe/', UnFavoriteRecipeView.as_view(), name='unfavorite_recipe'),
     path('<int:recipe_id>/like-recipe/', LikeRecipeView.as_view(), name='like_recipe'),
