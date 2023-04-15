@@ -5,10 +5,12 @@ import TextField from '@mui/material/TextField';
 import { Typography } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import * as React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import fetchBackend from '../../Utils/fetchBackend';
+import useSWR from 'swr';
 
 function ViewProfile() {
-    const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [dob, setDob] = useState('');
@@ -17,6 +19,23 @@ function ViewProfile() {
     const [location, setLocation] = useState('');
     const [email, setEmail] = useState('');
 
+    const getProfileUrl = `http://localhost:8000/accounts/get-user-info/`;
+    const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
+    const { data, error } = useSWR(getProfileUrl, fetcher);
+
+    useEffect(() => {
+        if (data) {
+            setBio(data.bio !== null ? data.bio : '');
+            setDob(data.date_of_birth);
+            setEmail(data.email);
+            setFirstName(data.first_name);
+            setLastName(data.last_name);
+            setLocation(data.location !== null ? data.location : '');
+            setPhone(data.phone);
+            setUsername(data.username);
+        }
+    }, [data]);
+
     return (
         <div>
             <Navbar />
@@ -24,6 +43,16 @@ function ViewProfile() {
                 <Grid item xs={12}>
                     <Box component="form">
                         <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <TextField
+                                    id="username"
+                                    label="Username"
+                                    variant="outlined"
+                                    value={username}
+                                    disabled
+                                    sx={{ paddingRight: '1vw' }}
+                                />
+                            </Grid>
                             <Grid item xs={12}>
                                 <TextField
                                     id="first-name"

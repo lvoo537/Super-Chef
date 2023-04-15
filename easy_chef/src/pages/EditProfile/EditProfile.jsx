@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Grid from '@mui/material/Unstable_Grid2';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -37,7 +37,7 @@ function EditProfile() {
     const [terms, setTerms] = useState(false);
     const [username, setUsername] = useState('');
 
-    const getProfileUrl = ``;
+    const getProfileUrl = `http://localhost:8000/accounts/get-user-info/`;
     const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
     const { data, error } = useSWR(getProfileUrl, fetcher);
 
@@ -45,6 +45,20 @@ function EditProfile() {
         errorStatus: false,
         errorMsg: <div></div>
     });
+
+    useEffect(() => {
+        if (data) {
+            console.log(data);
+            setBio(data.bio !== null ? data.bio : '');
+            setDob(data.date_of_birth);
+            setEmail(data.email);
+            setFirstName(data.first_name);
+            setLastName(data.last_name);
+            setLocation(data.location !== null ? data.location : '');
+            setPhone(data.phone);
+            setUsername(data.username);
+        }
+    }, [data]);
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -306,6 +320,7 @@ function EditProfile() {
                                                 onChange={(event) => {
                                                     setTerms(event.target.checked);
                                                 }}
+                                                required
                                             />
                                         }
                                         label="I agree with the terms and conditions."
