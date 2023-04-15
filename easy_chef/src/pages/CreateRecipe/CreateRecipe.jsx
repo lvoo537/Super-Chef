@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useRecipeContext } from '../../contexts/RecipeContext/RecipeContext';
 import { useState } from 'react';
-import fetchBackend from '../../Utils/fetchBackend';
+import fetchBackend, { fetchBackendImg } from '../../Utils/fetchBackend';
 import encodeImages from '../../Utils/encodeImages';
 import { Grid, TextField, Box, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
@@ -65,7 +65,7 @@ function CreateRecipe() {
                         formDataRecipeImg.append('file' + index, img);
                     });
                 }
-                fetchBackend
+                fetchBackendImg
                     .post(`/recipes/${recipeIdResponse}/upload-recipe/`, formDataRecipeImg)
                     .then((response) => {
                         console.log(response);
@@ -90,7 +90,7 @@ function CreateRecipe() {
                                         });
                                     }
                                     console.log(formData);
-                                    fetchBackend
+                                    fetchBackendImg
                                         .post(`/recipes/${instr.id}/upload-instruction/`, formData)
                                         .then((response) => {
                                             console.log(response);

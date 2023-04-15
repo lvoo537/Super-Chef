@@ -20,6 +20,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import Navbar from '../../components/Navbar/Navbar';
 import fetchBackend from '../../Utils/fetchBackend';
 import { useNavigate } from 'react-router-dom';
+import useSWR from 'swr';
 
 function EditProfile() {
     const navigate = useNavigate();
@@ -36,7 +37,11 @@ function EditProfile() {
     const [terms, setTerms] = useState(false);
     const [username, setUsername] = useState('');
 
-    const [error, setError] = useState({
+    const getProfileUrl = ``;
+    const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
+    const { data, error } = useSWR(getProfileUrl, fetcher);
+
+    const [formError, setFormError] = useState({
         errorStatus: false,
         errorMsg: <div></div>
     });
@@ -76,7 +81,7 @@ function EditProfile() {
             })
             .catch((err) => {
                 if (err.response.data && err.response.data['username']) {
-                    setError({
+                    setFormError({
                         errorStatus: true,
                         errorMsg: (
                             <Typography sx={{ color: 'red' }}>
@@ -308,7 +313,7 @@ function EditProfile() {
                                 </FormGroup>
                             </Grid>
                             <Grid item xs={12}>
-                                {error.errorStatus ? error.errorMsg : <div></div>}
+                                {formError.errorStatus ? formError.errorMsg : <div></div>}
                             </Grid>
                             <Grid item xs={12}>
                                 <Button type="submit" variant="contained">
