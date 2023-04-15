@@ -29,7 +29,6 @@ function ViewProfile() {
         if (data) {
             if (data.avatar_img) {
                 encodeImagesFromDb([data.avatar_img]).then((encodedAvatar) => {
-                    console.log(encodedAvatar);
                     setAvatar(encodedAvatar);
                 });
             } else {
