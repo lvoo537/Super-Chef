@@ -85,6 +85,7 @@ class RecipeFileUpdate(APIView):
         return Response(response_data, status=201)
 
 
+
 class UpdateRecipe(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
 
@@ -103,7 +104,8 @@ class UpdateRecipe(APIView):
         if base_recipe_name:
             # Find the base recipe in the database by its name
             try:
-                base_recipe = Recipe.objects.get(id=base_recipe_name)
+                base_recipe = Recipe.objects.filter(name__iexact=base_recipe_name).first()
+                base_recipe = base_recipe.id
                 is_there_a_base_recipe = True
             except Recipe.DoesNotExist:
                 # Base recipe does not exist in the database
@@ -242,7 +244,6 @@ class UpdateRecipe(APIView):
         response_data = {'Success message': 'Updated the Recipe successfully.'}
         return Response(response_data, status=201)
 
-
 class CreateView(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
 
@@ -254,7 +255,8 @@ class CreateView(APIView):
         if base_recipe_name:
             # Find the base recipe in the database by its name
             try:
-                base_recipe = Recipe.objects.get(id=base_recipe_name)
+                base_recipe = Recipe.objects.filter(name__iexact=base_recipe_name).first()
+                base_recipe = base_recipe.id
                 is_there_a_base_recipe = True
             except Recipe.DoesNotExist:
                 # Base recipe does not exist in the database
@@ -268,17 +270,23 @@ class CreateView(APIView):
             prep_time = timedelta(minutes=request.data['prep_time'])
             request.data['prep_time'] = prep_time
         request.data['owner'] = request.user.id
+        if is_there_a_base_recipe:
+            request.data['base_recipe'] = base_recipe
         recipe_serializer = RecipeSerializer(data=request.data)
 
         if recipe_serializer.is_valid():
+
             recipe = recipe_serializer.save()
         else:
             errors.update(recipe_serializer.errors)
             return Response(errors, status=400)
+#
+#         if is_there_a_base_recipe:
+#
+#             recipe.base_recipe = base_recipe
+#             recipe.save()
 
-        if is_there_a_base_recipe:
-            recipe.base_recipe = base_recipe
-            recipe.save()
+
 
         # Create Cuisine Serializers
         cuisine_serializers = []
@@ -383,9 +391,8 @@ class CreateView(APIView):
         #     obj.add(recipe)
 
         # Return response
-        response_data = {'Success message': 'Created the Recipe successfully.'}
+        response_data = {'recipe_id': recipe.id, 'Success message': 'Created the Recipe successfully.'}
         return Response(response_data, status=201)
-
 
 class RecipeFileUpload(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
@@ -570,6 +577,8 @@ class RetrieveInstructionFilesView(APIView):
 
 
 class AddToCartView(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
     def post(self, request, recipe_id):
         user = request.user
         try:
