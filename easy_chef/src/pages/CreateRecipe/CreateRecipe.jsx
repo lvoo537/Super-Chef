@@ -142,6 +142,7 @@ function CreateRecipe() {
                                 id="recipe-name"
                                 label="Recipe Name"
                                 variant="outlined"
+                                required
                             />
                         </Grid>
                         <Grid item xs={1}>

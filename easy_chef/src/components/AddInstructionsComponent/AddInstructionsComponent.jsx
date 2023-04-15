@@ -91,6 +91,7 @@ export default function AddInstructionsComponent({ instructions, setInstructions
                             sx={{ width: 650 }}
                             value={instructionBody}
                             onChange={(e) => setInstructionBody(e.target.value)}
+                            required={instructions.length === 0}
                         />
                     </Grid>
                     <Grid item xs={12}>
