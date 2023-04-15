@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from accounts.views import IsTokenValid
 from recipes.models import Rating, Recipe, Comment, CommentFile
-from social_media.serializers import RecipeRatingSerializer, RecipeSerializer
+from social_media.serializers import RecipeRatingSerializer, RecipeSerializer, RateRecipeSerializer
 
 from rest_framework.parsers import MultiPartParser
 
@@ -211,7 +211,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 class PopularRecipeView(ListAPIView):
-    serializer_class = RecipeSerializer
+    serializer_class = RateRecipeSerializer
     pagination_class = StandardResultsSetPagination
 
 

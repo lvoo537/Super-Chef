@@ -48,31 +48,13 @@ const ingredientRows = [
 function ShoppingCart() {
     const navigate = useNavigate();
     const [recipeRows, setRecipeRows] = useState([]);
-    //     {
-    //         id: 1,
-    //         recipeName: 'Chocolate Brownie',
-    //         servings: 2,
-    //         ingredients: [
-    //             'Flour',
-    //             'Sugar',
-    //             'Salt',
-    //             'Baking powder',
-    //             'Baking soda',
-    //             'Butter',
-    //             'Eggs',
-    //             'Vanilla extract',
-    //             'Milk',
-    //             'Chocolate chips'
-    //         ]
-    //     }
-    // ]);
 
     useEffect(() => {
         fetchBackend
             .get(`/recipes/shopping-list/`)
             .then((res) => {
                 const formattedRecipes = res.data['recipes'].map((recipe, index) => ({
-                    id: index + 1,
+                    id: recipe.id,
                     recipeName: recipe.name,
                     servings: recipe.servings,
                     ingredients: recipe.ingredients.map(

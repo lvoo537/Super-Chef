@@ -10,6 +10,7 @@ import { List } from '@mui/material';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import ClickableChip from './ClickableChip/ClickableChip';
+import fetchBackend from '../../Utils/fetchBackend';
 
 function CartRecipeTable(props) {
     // const handleServingsChange = (id, newServings) => {
@@ -24,6 +25,37 @@ function CartRecipeTable(props) {
     //     });
     //     props.setRows(newRows);
     // };
+    const [deletedRows, setDeletedRows] = useState([]);
+
+    const handleClick = (id) => {
+        props.setRows((rows) => rows.filter((row) => row.id !== id));
+        setDeletedRows([...deletedRows, id]);
+    };
+
+    useEffect(() => {
+        if (deletedRows.length > 0) {
+            const remainingRows = [];
+            deletedRows.forEach((id) => {
+                fetchBackend
+                    .post(`/recipes/${id}/remove-from-cart/`)
+                    .then((res) => {
+                        if (res.status === 204) {
+                            console.log(
+                                `Recipe with ID ${id} has been successfully removed from cart.`
+                            );
+                        } else {
+                            remainingRows.push(id);
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(`Failed to remove recipe with ID ${id} from cart: ${error}`);
+                        remainingRows.push(id);
+                    });
+            });
+            setDeletedRows(remainingRows);
+        }
+    }, [deletedRows]);
+
     const columns = [
         // { field: 'id', headerName: 'ID', width: 90 },
         {
@@ -73,10 +105,23 @@ function CartRecipeTable(props) {
             headerName: 'Action',
             sortable: false,
             renderCell: (params) => {
-                const handleClick = () => {
-                    props.setRows((rows) => rows.filter((row) => row.id !== params.row.id));
-                };
-                return <ClickableChip onClick={handleClick}>Delete</ClickableChip>;
+                // const handleClick = () => {
+                //     props.setRows((rows) => rows.filter((row) => row.id !== params.row.id));
+                //     //  send post request to backend http://127.0.0.1:8000/recipes/1/remove-from-cart/ to remove recipe from cart
+                //     useEffect(() => {
+                //         fetchBackend
+                //             .post(`/recipes/${params.row.id}/remove-from-cart/`)
+                //             .then((res) => {
+                //                 console.log(res);
+                //             })
+                //             .catch((error) => {
+                //                 console.log(error);
+                //             });
+                //     }, []);
+                // };
+                return (
+                    <ClickableChip onClick={() => handleClick(params.row.id)}>Delete</ClickableChip>
+                );
             },
             width: 200
         }

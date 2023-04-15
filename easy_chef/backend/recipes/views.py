@@ -447,12 +447,12 @@ class InstructionFileUpload(APIView):
                 file_list = file_dict.getlist(file_key)
                 for file in file_list:
                     name = file.name
-                    print(name)
+
                     InstructionFile.objects.create(name=name,
                                                    recipe=instruction,
                                                    file=file)
         # Return response
-        print(files)
+
         response_data = {'Success message': 'Uploaded the file successfully.'}
         return Response(response_data, status=201)
 
@@ -664,9 +664,22 @@ class ShoppingLists(APIView):
 
         result_json = {'recipes': serializer.data}
         #       TODO: FOR EACH RECIPE, GET THE INGREDIENTS AND ADD THEM TO THE JSON UNDER THE RECIPE
-        print(result_json['recipes'])
 
+        result_json['ingredients'] = []
+        ingredient_dict = {}
         for recipe in recipes:
+            ingredients = Ingredient.objects.filter(recipes=recipe)
+            for ingredient in ingredients:
+                if ingredient.name in ingredient_dict:
+                    ingredient_dict[ingredient.name]['amount'] += ingredient.quantity
+                else:
+                    ingredient_dict[ingredient.name] = {'id': ingredient.id,
+                                                        'name': ingredient.name,
+                                                        'amount': ingredient.quantity,
+                                                        'unit_of_measure': ingredient.unit_of_measure}
+            result_json['ingredients'] = list(ingredient_dict.values())
+            ingredient_serializer = IngredientSerializer(result_json['ingredients'], many=True)
+#             result_json['ingredients'] = ingredient_serializer.data
             ingredients = Ingredient.objects.filter(recipes=recipe)
             ingredient_serializer = IngredientSerializer(ingredients, many=True)
             for recipe2 in result_json['recipes']:
