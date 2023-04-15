@@ -6,6 +6,10 @@ import { DataGrid } from '@mui/x-data-grid';
 import './CartRecipeTable.css';
 import VirtualizedList from './MultipleSelectNative/MultipleSelectNative';
 import GroupedButtons from './GroupedButtons/GroupedButtons';
+import { List } from '@mui/material';
+import ListItemText from '@mui/material/ListItemText';
+import ListItem from '@mui/material/ListItem';
+import ClickableChip from './ClickableChip/ClickableChip';
 
 function CartRecipeTable(props) {
     const columns = [
@@ -26,7 +30,18 @@ function CartRecipeTable(props) {
             field: 'ingredients',
             headerName: 'Ingredients',
             renderCell: (params) => {
-                return <VirtualizedList ingredients={params.row.ingredients} itemSize={44} />;
+                // console.log(params.row.ingredients);
+                return (
+                    <Paper style={{ maxHeight: 115, overflowY: 'scroll', whiteSpace: 'pre-wrap' }}>
+                        <List>
+                            {params.row.ingredients.map((ingredient, index) => (
+                                <ListItem key={index}>
+                                    <ListItemText primary={ingredient} />
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Paper>
+                );
             },
             width: 170,
             editable: false
@@ -35,7 +50,7 @@ function CartRecipeTable(props) {
             field: 'servingQuantity',
             headerName: 'Servings',
             type: 'number',
-            width: 200,
+            width: 160,
             renderCell: (params) => {
                 return <GroupedButtons> </GroupedButtons>;
             },
@@ -45,6 +60,9 @@ function CartRecipeTable(props) {
             field: 'action',
             headerName: 'Action',
             sortable: false,
+            renderCell: (params) => {
+                return <ClickableChip> </ClickableChip>;
+            },
             width: 200
         }
     ];

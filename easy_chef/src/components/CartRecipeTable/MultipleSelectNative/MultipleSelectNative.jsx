@@ -8,6 +8,7 @@ import { FixedSizeList } from 'react-window';
 function VirtualizedList(props) {
     function renderRow(rowProps) {
         const { index, style } = rowProps;
+        console.log(props.ingredients[index]);
 
         return (
             <ListItem style={style} key={index} component="div" disablePadding>
