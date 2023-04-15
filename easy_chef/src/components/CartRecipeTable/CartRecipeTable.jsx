@@ -42,7 +42,7 @@ function CartRecipeTable(props) {
                     .then((res) => {
                         if (res.status === 204) {
                             console.log(
-                                `Recipe with ID ${id} has been successfully removed from cart.`
+                                `Recipe with ID ${id} has been successfully deleted from cart.`
                             );
                         } else {
                             remainingRows.push(id);
