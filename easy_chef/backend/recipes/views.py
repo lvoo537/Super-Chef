@@ -615,7 +615,6 @@ class ShoppingLists(APIView):
     def get(self, request):
 
         user = request.user
-        print(user)
         if user is None:
             return HttpResponseBadRequest("User not found")
 

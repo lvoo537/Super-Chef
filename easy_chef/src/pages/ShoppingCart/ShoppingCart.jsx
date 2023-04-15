@@ -38,6 +38,17 @@ const ingredientRows = [
     createIngredientData('Chocolate chips', '1 cup', 3)
 ];
 
+const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
+const urlForGet = `/recipes/shopping-list/`; // where recipeId is the state from context
+const { data, error } = useSWR(urlForGet, fetcher);
+
+useEffect(() => {
+    if (data) {
+        // Do whatever with data.data... data.data should be the response body
+        // u can set states here to update states
+    }
+}, [data]);
+
 const recipeRows = [
     {
         id: 1,
