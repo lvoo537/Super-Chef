@@ -1,4 +1,4 @@
-import { Grid, Rating, Typography } from '@mui/material';
+import { Grid, Rating, TextareaAutosize, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -7,6 +7,11 @@ import Carousel from '../../components/Carousel/Carousel';
 import './recipedetails.css';
 import StarIcon from '@mui/icons-material/Star';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import AccordionDetails from '@mui/material/AccordionDetails';
 
 function RecipeDetailsPage() {
     const { recipeId } = useParams();
@@ -15,7 +20,12 @@ function RecipeDetailsPage() {
     const [imageName, setImageName] = useState('');
     const [imagesEncoded, setImagesEncoded] = useState([]);
     const [value, setValue] = React.useState(0);
+    const [average_rating_value, average_rating_setValue] = React.useState(0);
     const [hover, setHover] = React.useState(-1);
+    const [likes, setlikes] = useState(0);
+    const [base_recipe, setbase_recipe] = useState(null);
+    const [servings, setServings] = useState(0);
+    const [instructions, setInstructions] = useState([]);
     // Handle login form submission
     // const handleLogin = async (event = undefined) => {
     //     if (event) {
@@ -45,6 +55,15 @@ function RecipeDetailsPage() {
             if (response.status === 200) {
                 const data = response.data;
                 setData(data);
+                average_rating_setValue(data.average_rating);
+                setlikes(data.likes);
+                if (data.base_recipe === null) {
+                    setbase_recipe('No base recipe');
+                } else {
+                    setbase_recipe(data.base_recipe);
+                }
+                setServings(servings);
+                setInstructions(data.instructions);
             }
         } catch (error) {
             console.error('Failed to fetch data');
@@ -150,7 +169,7 @@ function RecipeDetailsPage() {
         fetchBackend
             .post(`http://127.0.0.1:8000/social-media/${recipeId}/rate-recipe/`, dataToSend)
             .then((response) => {
-                // From response, if successful, get the recipe ID. So update the recipe context.
+                handleGetData();
             })
             .catch((error) => {});
     }, [value]);
@@ -191,7 +210,7 @@ function RecipeDetailsPage() {
                             Average rating:{' '}
                             <Rating
                                 name="rating"
-                                value={data.average_rating}
+                                value={average_rating_value}
                                 precision={1}
                                 readOnly
                             />
@@ -199,7 +218,7 @@ function RecipeDetailsPage() {
                     </div>
 
                     <div className="likes">
-                        <Typography variant="h5">Likes: {data.likes}</Typography>
+                        <Typography variant="h5">Likes: {likes}</Typography>
                     </div>
 
                     <div className="my-rating">
@@ -222,13 +241,83 @@ function RecipeDetailsPage() {
                             />
                         </Typography>
                     </div>
-                </div>
-                <div className="image-grid-item">
-                    <Rating name="rating" value={1} precision={0.5} readOnly />
+
+                    <div className="base-recipe">
+                        <Typography variant="h5">Base Recipe: {base_recipe}</Typography>
+                    </div>
+
+                    <div className="servings">
+                        <Typography variant="h5">Servings: {servings}</Typography>
+                    </div>
+                    <div className="button-container">
+                        <Button variant="contained" type="submit" color="success">
+                            Add to Cart
+                        </Button>
+
+                        <Button variant="contained" type="submit" color="error">
+                            Add to Favourite
+                        </Button>
+                    </div>
+
+                    <div className="button-container">
+                        <Button variant="contained" type="submit" color="primary">
+                            Like
+                        </Button>
+
+                        <Button variant="contained" type="submit" color="warning">
+                            Import Recipe
+                        </Button>
+                    </div>
                 </div>
             </div>
-
-            {/*</Grid>*/}
+            <Typography
+                variant="h4"
+                style={{ textAlign: 'center', paddingTop: '10px', fontWeight: 'bold' }}
+            >
+                How to pull Diya: A Thread...
+            </Typography>
+            <div className="instructions">
+                {instructions.map((instruction, index) => (
+                    <div className="instruction" key={index}>
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls={`panel${index + 1}-content`}
+                                id={`panel${index + 1}-header`}
+                            >
+                                <Typography>Step number: {instruction.step_number}</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography>Prep time: {instruction.prep_time}</Typography>
+                                <Typography>Cooking time: {instruction.cooking_time}</Typography>
+                                <br />
+                                <Typography>
+                                    Instructions:
+                                    <br />
+                                    {instruction.instruction}
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+                    </div>
+                ))}
+            </div>
+            <div className="comments">
+                <div className="comments-header">
+                    <Typography variant="h5">Comments</Typography>
+                </div>
+                <div className="text-area">
+                    <TextareaAutosize
+                        minRows={10}
+                        placeholder="Comment Right here"
+                        style={{ width: '35%' }}
+                    />
+                </div>
+                <div className="comment-buttons">
+                    <Button variant="contained" type="submit" color="primary">
+                        Post Comment!
+                    </Button>
+                </div>
+            </div>
         </>
     );
 }
