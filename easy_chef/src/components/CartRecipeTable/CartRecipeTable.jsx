@@ -61,7 +61,10 @@ function CartRecipeTable(props) {
             headerName: 'Action',
             sortable: false,
             renderCell: (params) => {
-                return <ClickableChip> </ClickableChip>;
+                // const handleClick = () => {
+                //     props.setRows((rows) => rows.filter((row) => row.id !== params.row.id));
+                // };
+                return <ClickableChip>Delete</ClickableChip>;
             },
             width: 200
         }

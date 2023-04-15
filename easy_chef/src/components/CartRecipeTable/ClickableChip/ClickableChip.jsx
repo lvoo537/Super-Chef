@@ -4,19 +4,15 @@ import Chip from '@mui/joy/Chip';
 import ChipDelete from '@mui/joy/ChipDelete';
 import DeleteForever from '@mui/icons-material/DeleteForever';
 
-export default function ClickableChip() {
+export default function ClickableChip(props) {
     return (
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             <Chip
                 variant="outlined"
                 color="danger"
-                // onClick={() => alert('You clicked the chip!')}
+                // onClick={props.onClick}
                 endDecorator={
-                    <ChipDelete
-                        color="danger"
-                        variant="plain"
-                        // onClick={() => alert('You clicked the delete button!')}
-                    >
+                    <ChipDelete color="danger" variant="plain">
                         <DeleteForever />
                     </ChipDelete>
                 }

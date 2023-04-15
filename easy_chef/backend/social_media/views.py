@@ -140,7 +140,6 @@ class UnLikeRecipeView(APIView):
         else:
             return Response({'message': 'Recipe not liked'}, status=status.HTTP_400_BAD_REQUEST)
 
-
 class MyRecipeView(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
 
@@ -163,15 +162,21 @@ class MyRecipeView(APIView):
         # interacted recipes
         # Created
         if recipes_created_serializer.data:
-            my_recipes['interacted'].append(recipes_created_serializer.data)
+            my_recipes['interacted'].extend(recipes_created_serializer.data)
+
+
+        lst = []
+        for something in my_recipes['interacted']:
+            lst.append(something['id'])
 
         # liked
         recipes_liked = request.user.liked_recipes.all()
         recipes_liked_serializer = RecipeSerializer(recipes_liked, many=True)
         if recipes_liked_serializer.data:
             for data in recipes_liked_serializer.data:
-                if data not in my_recipes['interacted']:
+                if data['id'] not in lst:
                     my_recipes['interacted'].append(data)
+                    lst.append(data['id'])
 
         # rated
         user_ratings = Rating.objects.filter(user=request.user)
@@ -179,8 +184,10 @@ class MyRecipeView(APIView):
         recipes_rated_serializer = RecipeSerializer(recipes_rated_by_user, many=True)
         if recipes_rated_serializer.data:
             for data in recipes_rated_serializer.data:
-                if data not in my_recipes['interacted']:
+                if data['id'] not in lst:
                     my_recipes['interacted'].append(data)
+                    lst.append(data['id'])
+
 
         # commented
         user_comments = Comment.objects.filter(user=request.user)
@@ -189,11 +196,12 @@ class MyRecipeView(APIView):
 
         if recipes_commented_serializer.data:
             for data in recipes_commented_serializer.data:
-                if data not in my_recipes['interacted']:
-                    my_recipes['interacted'].append(data)
+                 if data['id'] not in lst:
+                     my_recipes['interacted'].append(data)
+                     lst.append(data['id'])
+
 
         return Response({'my_recipes': my_recipes}, status=status.HTTP_200_OK)
-
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 5
