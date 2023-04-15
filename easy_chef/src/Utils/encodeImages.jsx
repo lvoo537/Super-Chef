@@ -21,7 +21,7 @@ const encodeImages = (event, setImageCount, setImagesEncoded) => {
     }
 };
 
-export const encodeImagesFromDb = (files, setImagesEncoded) => {
+export const encodeImagesFromDb = async (files) => {
     const encodedImages = [];
     for (let file of files) {
         const base64String = file; // replace with your base64 string
@@ -35,11 +35,15 @@ export const encodeImagesFromDb = (files, setImagesEncoded) => {
         const blob = new Blob([byteArray]);
         const reader = new FileReader();
         reader.readAsDataURL(blob);
-        reader.onloadend = () => {
-            encodedImages.push(reader.result);
-            if (setImagesEncoded !== null) setImagesEncoded(encodedImages);
-        };
+        encodedImages.push(
+            await new Promise((resolve) => {
+                reader.onloadend = () => {
+                    resolve(reader.result);
+                };
+            })
+        );
     }
+    return encodedImages;
 };
 
 export default encodeImages;

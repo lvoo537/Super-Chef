@@ -53,7 +53,7 @@ function EditRecipe() {
     const [imagesEncoded, setImagesEncoded] = useState([]);
     // array of instruction objects
     const [instructions, setInstructions] = useState([]);
-    const [instrImagesEncoded, setInstrImagesEncoded] = useState('');
+    const [instrImagesEncoded, setInstrImagesEncoded] = useState([]);
     const [instrImagesLoaded, setInstrImagesLoaded] = useState(false);
 
     // array of strings denoting diet names
@@ -99,36 +99,40 @@ function EditRecipe() {
             );
             fetchBackend
                 .get(`/recipes/${data.id}/retrieve-recipe-files`)
-                .then((res) => {
+                .then(async (res) => {
                     // console.log(res.data);
                     console.log('Successfully retrieved recipe images');
-                    encodeImagesFromDb(res.data.files, setImagesEncoded);
+                    const encodedImages = encodeImagesFromDb(res.data.files);
+                    setImagesEncoded(await encodedImages);
                 })
                 .catch((err) => {
                     console.log(err);
                 });
-            // setImagesEncoded([]);
             const instructionsResponse = data.instructions;
 
             if (instructionsResponse.length === 0) setInstrImagesLoaded(true);
 
-            for (let i = 0; i < instructionsResponse.length; i++) {
-                const instr = instructionsResponse[i];
-                fetchBackend
-                    .get(`/recipes/${instr.id}/retrieve-instruction-files`)
-                    .then((res) => {
-                        console.log(`Successfully retrieved instruction images for ${instr.id}`);
-                        encodeImagesFromDb(res.data.files, setInstrImagesEncoded);
-                        instr.instructionImagesEncoded = instrImagesEncoded;
-                        if (i === instructionsResponse.length - 1) {
-                            setInstructions(instructionsResponse);
-                            setInstrImagesLoaded(true);
-                        }
-                    })
-                    .catch((err) => {
-                        console.log(err);
-                    });
-            }
+            Promise.all(
+                instructionsResponse.map((instr) =>
+                    fetchBackend
+                        .get(`/recipes/${instr.id}/retrieve-instruction-files`)
+                        .then((res) => {
+                            console.log(
+                                `Successfully retrieved instruction images for ${instr.id}`
+                            );
+                            return encodeImagesFromDb(res.data.files);
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                            return [];
+                        })
+                )
+            ).then((encodedImagesArray) => {
+                const imagesEncoded = encodedImagesArray.flat();
+                setInstructions(instructionsResponse);
+                setInstrImagesEncoded(imagesEncoded);
+                setInstrImagesLoaded(true);
+            });
             setDefaultDietRow(data.diets.map((diet) => createDefaultSingleRow('Diets', diet.name)));
             setDefaultCuisineRow(
                 data.cuisines.map((cuisine) => createDefaultSingleRow('Cuisines', cuisine.name))
