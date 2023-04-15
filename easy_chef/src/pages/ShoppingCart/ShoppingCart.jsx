@@ -47,24 +47,42 @@ const ingredientRows = [
 
 function ShoppingCart() {
     const navigate = useNavigate();
-    const [recipeRows, setRecipeRows] = useState([
-        {
-            id: 1,
-            recipeName: 'Chocolate Brownie',
-            ingredients: [
-                'Flour',
-                'Sugar',
-                'Salt',
-                'Baking powder',
-                'Baking soda',
-                'Butter',
-                'Eggs',
-                'Vanilla extract',
-                'Milk',
-                'Chocolate chips'
-            ]
-        }
-    ]);
+    const [recipeRows, setRecipeRows] = useState([]);
+    //     {
+    //         id: 1,
+    //         recipeName: 'Chocolate Brownie',
+    //         servings: 2,
+    //         ingredients: [
+    //             'Flour',
+    //             'Sugar',
+    //             'Salt',
+    //             'Baking powder',
+    //             'Baking soda',
+    //             'Butter',
+    //             'Eggs',
+    //             'Vanilla extract',
+    //             'Milk',
+    //             'Chocolate chips'
+    //         ]
+    //     }
+    // ]);
+
+    useEffect(() => {
+        fetchBackend
+            .get(`/recipes/shopping-list/`)
+            .then((res) => {
+                const formattedRecipes = res.data['recipes'].map((recipe, index) => ({
+                    id: index + 1,
+                    recipeName: recipe.name,
+                    servings: recipe.servings,
+                    ingredients: recipe.ingredients.map((ingredient) => ingredient.name)
+                }));
+                setRecipeRows(formattedRecipes);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }, []);
 
     return (
         <Grid container spacing={2} sx={{ textAlign: 'center' }}>

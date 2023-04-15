@@ -644,7 +644,22 @@ class ShoppingLists(APIView):
             return HttpResponseBadRequest("List of recipes are required")
 
         serializer = RecipeSerializer(recipes, many=True)
+
         result_json = {'recipes': serializer.data}
+#       TODO: FOR EACH RECIPE, GET THE INGREDIENTS AND ADD THEM TO THE JSON UNDER THE RECIPE
+        print(result_json['recipes'])
+
+        for recipe in recipes:
+            ingredients = Ingredient.objects.filter(recipes=recipe)
+            ingredient_serializer = IngredientSerializer(ingredients, many=True)
+            result_json['ingredients'] = ingredient_serializer.data
+            for recipe2 in result_json['recipes']:
+                if recipe2['id'] == recipe.id:
+                    recipe2['ingredients'] = ingredient_serializer.data
+
+#         ingredients = Ingredient.objects.filter(recipes=recipe_id)
+#         ingredient_serializer= IngredientSerializer(ingredients,many=True)
+#         result_json["ingredients"] = ingredient_serializer.data
         return Response(result_json)
 
 #         for recipe in recipes:

@@ -12,6 +12,18 @@ import ListItem from '@mui/material/ListItem';
 import ClickableChip from './ClickableChip/ClickableChip';
 
 function CartRecipeTable(props) {
+    // const handleServingsChange = (id, newServings) => {
+    //     const newRows = props.rows.map((row) => {
+    //         if (row.id === id) {
+    //             return {
+    //                 ...row,
+    //                 servings: newServings
+    //             };
+    //         }
+    //         return row;
+    //     });
+    //     props.setRows(newRows);
+    // };
     const columns = [
         // { field: 'id', headerName: 'ID', width: 90 },
         {
@@ -47,12 +59,12 @@ function CartRecipeTable(props) {
             editable: false
         },
         {
-            field: 'servingQuantity',
+            field: 'servings',
             headerName: 'Servings',
             type: 'number',
             width: 160,
             renderCell: (params) => {
-                return <GroupedButtons> </GroupedButtons>;
+                return <GroupedButtons servings={params.value} />;
             },
             editable: false
         },

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 
-function GroupedButtons() {
-    const [counter, setCounter] = useState(1);
+function GroupedButtons(props) {
+    const [counter, setCounter] = useState(props.servings);
 
     const handleIncrement = () => {
         setCounter(counter + 1);
