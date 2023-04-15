@@ -652,7 +652,6 @@ class ShoppingLists(APIView):
         for recipe in recipes:
             ingredients = Ingredient.objects.filter(recipes=recipe)
             ingredient_serializer = IngredientSerializer(ingredients, many=True)
-            result_json['ingredients'] = ingredient_serializer.data
             for recipe2 in result_json['recipes']:
                 if recipe2['id'] == recipe.id:
                     recipe2['ingredients'] = ingredient_serializer.data
