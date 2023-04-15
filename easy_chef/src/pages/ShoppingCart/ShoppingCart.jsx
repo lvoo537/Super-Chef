@@ -75,7 +75,14 @@ function ShoppingCart() {
                     id: index + 1,
                     recipeName: recipe.name,
                     servings: recipe.servings,
-                    ingredients: recipe.ingredients.map((ingredient) => ingredient.name)
+                    ingredients: recipe.ingredients.map(
+                        (ingredient) =>
+                            ingredient.name +
+                            ' ' +
+                            ingredient.quantity +
+                            ' ' +
+                            ingredient.unit_of_measure
+                    )
                 }));
                 setRecipeRows(formattedRecipes);
             })

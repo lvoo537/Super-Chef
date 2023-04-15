@@ -17,5 +17,6 @@ urlpatterns = [
     path('<int:recipe_id>/retrieve-recipe-files/', RetrieveRecipeFilesView.as_view()),
     path('<int:comment_id>/retrieve-comment-files/', RetrieveCommentFilesView.as_view()),
     path('<int:recipe_id>/add-to-cart/', AddToCartView.as_view()),
+    path('<int:recipe_id>/remove-from-cart/', RemoveFromCartView.as_view()),
     path('return-all-recipes/', ReturnAllRecipes.as_view()),
 ]

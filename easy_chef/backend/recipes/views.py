@@ -86,7 +86,6 @@ class RecipeFileUpdate(APIView):
         return Response(response_data, status=201)
 
 
-
 class UpdateRecipe(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
 
@@ -245,6 +244,7 @@ class UpdateRecipe(APIView):
         response_data = {'Success message': 'Updated the Recipe successfully.'}
         return Response(response_data, status=201)
 
+
 class CreateView(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
 
@@ -262,7 +262,7 @@ class CreateView(APIView):
             except Recipe.DoesNotExist:
                 # Base recipe does not exist in the database
                 errors['base_recipe'] = 'Base recipe does not exist'
-#
+        #
         # Create Recipe Serializer
         if request.data['cooking_time']:
             cooking_time = timedelta(minutes=request.data['cooking_time'])
@@ -281,13 +281,11 @@ class CreateView(APIView):
         else:
             errors.update(recipe_serializer.errors)
             return Response(errors, status=400)
-#
-#         if is_there_a_base_recipe:
-#
-#             recipe.base_recipe = base_recipe
-#             recipe.save()
-
-
+        #
+        #         if is_there_a_base_recipe:
+        #
+        #             recipe.base_recipe = base_recipe
+        #             recipe.save()
 
         # Create Cuisine Serializers
         cuisine_serializers = []
@@ -394,6 +392,7 @@ class CreateView(APIView):
         # Return response
         response_data = {'recipe_id': recipe.id, 'Success message': 'Created the Recipe successfully.'}
         return Response(response_data, status=201)
+
 
 class RecipeFileUpload(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
@@ -504,7 +503,7 @@ class RecipeDetails(APIView):
     Returns: Recipe details as specified in model
     """
 
-    def get(self, request,recipe_id):
+    def get(self, request, recipe_id):
         # recipe_name = request.GET.get('recipe_name', None)
         # if recipe_name is None:
         #     return Response({'error': 'Recipe name is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -513,7 +512,7 @@ class RecipeDetails(APIView):
         #     return Response({'error': 'Recipe not found'}, status=status.HTTP_404_NOT_FOUND)
         # serializer = RecipeSerializer(recipe[0])
         # return Response(serializer.data, status=status.HTTP_200_OK)
-        return_data ={}
+        return_data = {}
         try:
             recipe = Recipe.objects.get(id=recipe_id)
         except Recipe.DoesNotExist:
@@ -522,19 +521,19 @@ class RecipeDetails(APIView):
         recipe_serializer = RecipeSerializer(recipe)
         return_data = recipe_serializer.data
         instructions = Instruction.objects.filter(recipe=recipe_id).order_by('step_number')
-        instruction_serializer = InstructionSerializer(instructions,many=True)
+        instruction_serializer = InstructionSerializer(instructions, many=True)
         comments = Comment.objects.filter(recipe=recipe_id)
-        comment_serializer = CommentSerializer(comments,many=True)
+        comment_serializer = CommentSerializer(comments, many=True)
         diets = Diet.objects.filter(recipes=recipe_id)
-        diet_serializer = DietSerializer(diets,many=True)
+        diet_serializer = DietSerializer(diets, many=True)
         cuisines = Cuisine.objects.filter(recipes=recipe_id)
-        cuisine_serializer = CuisineSerializer(cuisines,many=True)
+        cuisine_serializer = CuisineSerializer(cuisines, many=True)
         ingredients = Ingredient.objects.filter(recipes=recipe_id)
-        ingredient_serializer= IngredientSerializer(ingredients,many=True)
+        ingredient_serializer = IngredientSerializer(ingredients, many=True)
         return_data["ingredients"] = ingredient_serializer.data
         return_data["cuisines"] = cuisine_serializer.data
         return_data["diets"] = diet_serializer.data
-        return_data["instructions"] =instruction_serializer.data
+        return_data["instructions"] = instruction_serializer.data
         return_data["comments"] = comment_serializer.data
 
         return Response(return_data, status=200)
@@ -555,15 +554,15 @@ class RetrieveCommentFilesView(APIView):
 
 class RetrieveRecipeFilesView(APIView):
     def get(self, request, recipe_id):
-#         recipe_files = RecipeFile.objects.filter(recipe=recipe_id)
-#         files = []
-#         for recipe_file in recipe_files:
-#             file_path = recipe_file.file.path
-#             file = open(file_path, 'rb')
-#             files.append(file)
-#
-#         response = FileResponse(files)
-#         return response
+        #         recipe_files = RecipeFile.objects.filter(recipe=recipe_id)
+        #         files = []
+        #         for recipe_file in recipe_files:
+        #             file_path = recipe_file.file.path
+        #             file = open(file_path, 'rb')
+        #             files.append(file)
+        #
+        #         response = FileResponse(files)
+        #         return response
         recipe_files = RecipeFile.objects.filter(recipe=recipe_id)
         files = []
         for recipe_file in recipe_files:
@@ -606,14 +605,32 @@ class AddToCartView(APIView):
         shopping_list.save()
         return Response({"message": "Successfully added recipe to the shopping list."}, status=201)
 
+
+class RemoveFromCartView(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
+    def post(self, request, recipe_id):
+        user = request.user
+        try:
+            recipe = Recipe.objects.get(id=recipe_id)
+        except Recipe.DoesNotExist:
+            return Response(
+                {'Error': f'Recipe with id {recipe_id} does not exist'},
+                status=400)
+        shopping_list = ShoppingList.objects.get(user=user)
+        shopping_list.recipes.remove(recipe)
+        shopping_list.save()
+        return Response({"message": "Successfully removed recipe from the shopping list."}, status=204)
+
+
 class ReturnAllRecipes(ListAPIView):
     serializer_class = RecipeSerializer
+
     def get_queryset(self):
         return Recipe.objects.all()
 
 
 class ShoppingLists(APIView):
-
     """
     This view is used to get the shopping list of a recipe.
     GET /recipes/shopping-list/
@@ -646,7 +663,7 @@ class ShoppingLists(APIView):
         serializer = RecipeSerializer(recipes, many=True)
 
         result_json = {'recipes': serializer.data}
-#       TODO: FOR EACH RECIPE, GET THE INGREDIENTS AND ADD THEM TO THE JSON UNDER THE RECIPE
+        #       TODO: FOR EACH RECIPE, GET THE INGREDIENTS AND ADD THEM TO THE JSON UNDER THE RECIPE
         print(result_json['recipes'])
 
         for recipe in recipes:
@@ -656,10 +673,11 @@ class ShoppingLists(APIView):
                 if recipe2['id'] == recipe.id:
                     recipe2['ingredients'] = ingredient_serializer.data
 
-#         ingredients = Ingredient.objects.filter(recipes=recipe_id)
-#         ingredient_serializer= IngredientSerializer(ingredients,many=True)
-#         result_json["ingredients"] = ingredient_serializer.data
+        #         ingredients = Ingredient.objects.filter(recipes=recipe_id)
+        #         ingredient_serializer= IngredientSerializer(ingredients,many=True)
+        #         result_json["ingredients"] = ingredient_serializer.data
         return Response(result_json)
+
 
 #         for recipe in recipes:
 #             result_json['id'].append(recipe.id)
