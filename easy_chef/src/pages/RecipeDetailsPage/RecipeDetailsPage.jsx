@@ -276,7 +276,7 @@ function RecipeDetailsPage() {
                 variant="h4"
                 style={{ textAlign: 'center', paddingTop: '10px', fontWeight: 'bold' }}
             >
-                How to pull Diya: A Thread...
+                Instructions
             </Typography>
             <div className="instructions">
                 {instructions.map((instruction, index) => (
