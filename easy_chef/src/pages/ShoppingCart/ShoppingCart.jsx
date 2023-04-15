@@ -6,8 +6,6 @@ import fetchBackend from '../../Utils/fetchBackend';
 import { Grid, TextField, Box, TableFooter } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
 
-import { createTheme } from '@mui/material/styles';
-
 // // what this do?
 // const theme = createTheme();
 
