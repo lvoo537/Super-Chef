@@ -58,7 +58,7 @@ export default function RecipeInstructionsAccordion(props) {
                                 <div></div>
                             ) : (
                                 <Box display="flex" justifyContent="center" alignItems="center">
-                                    <Carousel images={instruction.instructionImages} />
+                                    <Carousel images={instruction.instructionImagesEncoded} />
                                 </Box>
                             )}
                         </AccordionDetails>

@@ -55,22 +55,65 @@ function CreateRecipe() {
         fetchBackend
             .post('/recipes/create/', dataToSend)
             .then((response) => {
-                console.log('SUCCESS');
-                navigate('/');
-                // TODO: From response, if successful, get the recipe ID. So update the recipe context.
+                console.log('Successfully created recipe');
+                const recipeIdResponse = response.data.recipe_id;
+                setRecipeId(recipeIdResponse);
+
+                const formDataRecipeImg = new FormData();
+                if (recipeImages.length !== 0) {
+                    recipeImages.map((img, index) => {
+                        formDataRecipeImg.append('file' + index, img);
+                    });
+                }
+                fetchBackend
+                    .post(`/recipes/${recipeIdResponse}/upload-recipe/`, formDataRecipeImg)
+                    .then((response) => {
+                        console.log(response);
+                        console.log('Successfully uploaded recipe images');
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+
+                fetchBackend
+                    .get(`/recipes/recipe-details/${recipeIdResponse}/`)
+                    .then((response) => {
+                        console.log('Successfully retrieved recipe details');
+                        const detailsInstructions = response.data.instructions;
+                        for (let instr of detailsInstructions) {
+                            for (let instruction of instructions) {
+                                if (instruction.step_number === instr.step_number) {
+                                    const formData = new FormData();
+                                    if (instruction.instructionImages) {
+                                        instruction.instructionImages.map((image, index) => {
+                                            formData.append('file' + index, image);
+                                        });
+                                    }
+                                    console.log(formData);
+                                    fetchBackend
+                                        .post(`/recipes/${instr.id}/upload-instruction/`, formData)
+                                        .then((response) => {
+                                            console.log(response);
+                                            console.log(
+                                                `Successfully uploaded instruction id: ${instr.id}`
+                                            );
+                                            navigate('/');
+                                        })
+                                        .catch((error) => {
+                                            console.log(error);
+                                        });
+                                    break;
+                                }
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
             })
             .catch((error) => {
                 console.log(error);
             });
-
-        // Make sure this is called when recipe context is set.
-        // TODO: send recipe images using recipeImages state.
-        fetchBackend
-            .post(`/recipes/${recipeId}/upload-recipe/`)
-            .then((response) => {
-                //
-            })
-            .catch((error) => {});
     };
 
     const handleImages = (event) => {

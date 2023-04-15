@@ -447,10 +447,12 @@ class InstructionFileUpload(APIView):
                 file_list = file_dict.getlist(file_key)
                 for file in file_list:
                     name = file.name
+                    print(name)
                     InstructionFile.objects.create(name=name,
                                                    recipe=instruction,
                                                    file=file)
         # Return response
+        print(files)
         response_data = {'Success message': 'Uploaded the file successfully.'}
         return Response(response_data, status=201)
 

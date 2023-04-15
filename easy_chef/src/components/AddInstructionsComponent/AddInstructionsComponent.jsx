@@ -14,10 +14,12 @@ export default function AddInstructionsComponent({ instructions, setInstructions
     const [prepTime, setPrepTime] = useState(0);
     const [imageName, setImageName] = useState('');
     const [imagesEncoded, setImagesEncoded] = useState([]);
+    const [rawImages, setRawImages] = useState([]);
     const handleImages = (event) => {
         const files = Array.from(event.target.files);
         const numSelected = `${files.length} Files Selected`;
         setImageName(numSelected);
+        setRawImages(files);
 
         for (let file of files) {
             const reader = new FileReader();
@@ -35,7 +37,8 @@ export default function AddInstructionsComponent({ instructions, setInstructions
             step_number: instructionNum,
             cooking_time: cookingTime,
             prep_time: prepTime,
-            instructionImages: imagesEncoded
+            instructionImagesEncoded: imagesEncoded,
+            instructionImages: rawImages
         };
         setInstructions((prevState) => [...prevState, newInstruction]);
         setInstructionNum((prevState) => prevState + 1);
