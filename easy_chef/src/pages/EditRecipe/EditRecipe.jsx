@@ -118,10 +118,7 @@ function EditRecipe() {
                         const res = await fetchBackend.get(
                             `/recipes/${instr.id}/retrieve-instruction-files`
                         );
-                        console.log(res.data);
-                        console.log(`Successfully retrieved instruction images for ${instr.id}`);
                         const encodedImages = await encodeImagesFromDb(res.data.files);
-                        console.log('======================');
                         instr.instructionImagesEncoded = encodedImages;
                         return encodedImages;
                     } catch (err) {
@@ -218,13 +215,10 @@ function EditRecipe() {
             dataToSend.prep_time = prepTime;
         }
 
-        console.log(dataToSend);
-
         fetchBackend
             .post(`/recipes/${fromCard ? recipeId : recipeIdPath}/update-recipe/`, dataToSend)
             .then((response) => {
                 console.log('Successfully edited recipe');
-                console.log(response);
                 fetchBackend
                     .get(`/recipes/recipe-details/${fromCard ? recipeId : recipeIdPath}/`)
                     .then((response) => {
@@ -239,11 +233,9 @@ function EditRecipe() {
                                             formData.append('file' + index, image);
                                         });
                                     }
-                                    console.log(formData);
                                     fetchBackendImg
                                         .post(`/recipes/${instr.id}/upload-instruction/`, formData)
                                         .then((response) => {
-                                            console.log(response);
                                             console.log(
                                                 `Successfully uploaded instruction id: ${instr.id}`
                                             );
