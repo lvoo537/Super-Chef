@@ -45,12 +45,12 @@ export default function RecipeInstructionsAccordion(props) {
                         <AccordionDetails>
                             <Typography sx={{ mb: 6 }}>{instruction.instruction}</Typography>
                             <Typography sx={{ mb: 0.5 }} align="center">{`Cooking Time: ${
-                                typeof props.cooking_time === 'string'
+                                typeof instruction.cooking_time === 'string'
                                     ? instruction.cooking_time
                                     : secondsToHHMMSS(instruction.cooking_time)
                             }`}</Typography>
                             <Typography sx={{ mb: 3 }} align="center">{`Prep. Time: ${
-                                typeof props.prep_time === 'string'
+                                typeof instruction.prep_time === 'string'
                                     ? instruction.prep_time
                                     : secondsToHHMMSS(instruction.prep_time)
                             }`}</Typography>

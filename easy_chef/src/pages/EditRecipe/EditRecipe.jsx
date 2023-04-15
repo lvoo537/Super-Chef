@@ -68,7 +68,8 @@ function EditRecipe() {
     const [recipeName, setRecipeName] = React.useState('');
     const [cookingTime, setCookingTime] = React.useState(0);
     const [prepTime, setPrepTime] = React.useState(0);
-    const [baseRecipe, setBaseRecipe] = React.useState('');
+    const [owner, setOwner] = React.useState('');
+    // const [baseRecipe, setBaseRecipe] = React.useState('');
 
     const getRecipeDetailsUrl = `http://localhost:8000/recipes/recipe-details/${
         fromCard ? recipeId : recipeIdPath
@@ -112,7 +113,6 @@ function EditRecipe() {
 
             for (let i = 0; i < instructionsResponse.length; i++) {
                 const instr = instructionsResponse[i];
-
                 fetchBackend
                     .get(`/recipes/${instr.id}/retrieve-instruction-files`)
                     .then((res) => {
@@ -135,17 +135,18 @@ function EditRecipe() {
             setRecipeName(data.name);
             setCookingTime(timeStringToSeconds(data.cooking_time));
             setPrepTime(timeStringToSeconds(data.prep_time));
-            const baseRecipeId = data.base_recipe === null ? '' : data.base_recipe;
-            if (baseRecipeId === '') setBaseRecipe('');
-            fetchBackend
-                .get(`/recipes/recipe-details/${baseRecipeId}`)
-                .then((res) => {
-                    console.log('Successfully retrieved base recipe details');
-                    setBaseRecipe(res.data.name);
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
+            setOwner(data.owner);
+            // const baseRecipeId = data.base_recipe === null ? '' : data.base_recipe;
+            // if (baseRecipeId === '') setBaseRecipe('');
+            // fetchBackend
+            //     .get(`/recipes/recipe-details/${baseRecipeId}`)
+            //     .then((res) => {
+            //         console.log('Successfully retrieved base recipe details');
+            //         setBaseRecipe(res.data.name);
+            //     })
+            //     .catch((err) => {
+            //         console.log(err);
+            //     });
         }
     }, [data, instrImagesLoaded, setInstrImagesLoaded]);
 
@@ -191,19 +192,19 @@ function EditRecipe() {
         // TODO: Get recipe name, cooking time, recipe images, ingredients, instructions
         const dataToSend = {
             name: data.get('recipe-name'),
-            cooking_time:
-                data.get('cooking-time') !== ''
-                    ? parseInt(data.get('cooking-time').toString())
-                    : -1,
-            prep_time:
-                data.get('prep-time') !== '' ? parseInt(data.get('prep-time').toString()) : -1,
-            base_recipe: data.get('base-recipe'),
-            // recipeImages: imagesEncoded,
+            // base_recipe: data.get('base-recipe'),
             ingredients: ingredients,
             instructions: instructions,
             cuisine: cuisines,
-            diets: diets
+            diets: diets,
+            owner
         };
+        if (data.get('cooking-time') !== '') {
+            dataToSend.cooking_time = parseInt(data.get('cooking-time'));
+        }
+        if (data.get('prep-time') !== '') {
+            dataToSend.prep_time = parseInt(data.get('prep-time'));
+        }
 
         console.log(dataToSend);
 
@@ -266,13 +267,12 @@ function EditRecipe() {
                                 id="cooking-time"
                                 label="Cooking Time"
                                 variant="outlined"
-                                type="text"
+                                type="number"
                                 focused
                                 InputProps={{ inputProps: { min: 0 } }}
                                 value={cookingTime}
                                 onChange={(event) => {
-                                    const value = event.target.value;
-                                    setCookingTime(parseInt(value));
+                                    setCookingTime(parseInt(event.target.value));
                                 }}
                             />
                         </Grid>
@@ -282,13 +282,12 @@ function EditRecipe() {
                                 id="prep-time"
                                 label="Prep Time"
                                 variant="outlined"
-                                type="text"
+                                type="number"
                                 focused
                                 InputProps={{ inputProps: { min: 0 } }}
                                 value={prepTime}
                                 onChange={(event) => {
-                                    const value = event.target.value;
-                                    setPrepTime(parseInt(value));
+                                    setPrepTime(parseInt(event.target.value));
                                 }}
                             />
                         </Grid>
@@ -309,16 +308,16 @@ function EditRecipe() {
                                 Submit Edited Recipe
                             </Button>
                         </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                name="base-recipe"
-                                id="base-recipe"
-                                label="Base Recipe"
-                                sx={{ width: 500 }}
-                                value={baseRecipe}
-                                onChange={(event) => setBaseRecipe(event.target.value)}
-                            />
-                        </Grid>
+                        {/*<Grid item xs={12}>*/}
+                        {/*    <TextField*/}
+                        {/*        name="base-recipe"*/}
+                        {/*        id="base-recipe"*/}
+                        {/*        label="Base Recipe"*/}
+                        {/*        sx={{ width: 500 }}*/}
+                        {/*        value={baseRecipe}*/}
+                        {/*        onChange={(event) => setBaseRecipe(event.target.value)}*/}
+                        {/*    />*/}
+                        {/*</Grid>*/}
                         {imagesEncoded.length === 0 ? (
                             <div></div>
                         ) : (
