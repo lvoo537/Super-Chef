@@ -3,8 +3,8 @@ import { useRecipeContext } from '../../contexts/RecipeContext/RecipeContext';
 import { useEffect, useState } from 'react';
 import * as React from 'react';
 import fetchBackend from '../../Utils/fetchBackend';
-import encodeImages from '../../Utils/encodeImages';
-import { Box, Grid, TextField, Typography } from '@mui/material';
+import encodeImages, { encodeImagesFromDb } from '../../Utils/encodeImages';
+import { Box, CircularProgress, Grid, TextField, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
 import Button from '@mui/material/Button';
 import Carousel from '../../components/Carousel/Carousel';
@@ -53,6 +53,8 @@ function EditRecipe() {
     const [imagesEncoded, setImagesEncoded] = useState([]);
     // array of instruction objects
     const [instructions, setInstructions] = useState([]);
+    const [instrImagesEncoded, setInstrImagesEncoded] = useState('');
+    const [instrImagesLoaded, setInstrImagesLoaded] = useState(false);
 
     // array of strings denoting diet names
     const [diets, setDiets] = React.useState([]);
@@ -82,9 +84,7 @@ function EditRecipe() {
     let ingredientIdCounter = 0;
     useEffect(() => {
         if (data) {
-            // Set states from data.data
-            // Assuming that data is the response data...
-            // TODO: Prefiling ingredient data into ingredient table not working
+            console.log(data);
             setIngredients(
                 data.ingredients.map((ingredient, index) => {
                     ingredientIdCounter += 1;
@@ -96,24 +96,58 @@ function EditRecipe() {
                     };
                 })
             );
-            // console.log(data.ingredients);
             // TODO: Get images related to recipeId
+            fetchBackend
+                .get(`/recipes/${data.id}/retrieve-recipe-files`)
+                .then((res) => {
+                    // console.log(res.data);
+                    console.log('Successfully retrieved recipe images');
+                    encodeImagesFromDb(res.data.files, setImagesEncoded);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
             // setImagesEncoded([]);
-            setInstructions(data.instructions.map((instruction) => instruction.instruction));
-            // Assuming data.data.diets = [String] and data.data.cuisines = [String]
-            // TODO: Double check what object data.diets[i] is
-            setDefaultDietRow(
-                data.diets.map((dietName) => createDefaultSingleRow('Diets', dietName))
-            );
+            const instructionsResponse = data.instructions;
+
+            for (let i = 0; i < instructionsResponse.length; i++) {
+                const instr = instructionsResponse[i];
+
+                fetchBackend
+                    .get(`/recipes/${instr.id}/retrieve-instruction-files`)
+                    .then((res) => {
+                        console.log(`Successfully retrieved instruction images for ${instr.id}`);
+                        encodeImagesFromDb(res.data.files, setInstrImagesEncoded);
+                        instr.instructionImagesEncoded = instrImagesEncoded;
+                        if (i === instructionsResponse.length - 1) {
+                            setInstructions(instructionsResponse);
+                            setInstrImagesLoaded(true);
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            }
+            setDefaultDietRow(data.diets.map((diet) => createDefaultSingleRow('Diets', diet.name)));
             setDefaultCuisineRow(
-                data.cuisines.map((cuisineName) => createDefaultSingleRow('Cuisines', cuisineName))
+                data.cuisines.map((cuisine) => createDefaultSingleRow('Cuisines', cuisine.name))
             );
             setRecipeName(data.name);
             setCookingTime(timeStringToSeconds(data.cooking_time));
             setPrepTime(timeStringToSeconds(data.prep_time));
-            setBaseRecipe(data.base_recipe === null ? '' : data.base_recipe);
+            const baseRecipeId = data.base_recipe === null ? '' : data.base_recipe;
+            if (baseRecipeId === '') setBaseRecipe('');
+            fetchBackend
+                .get(`/recipes/recipe-details/${baseRecipeId}`)
+                .then((res) => {
+                    console.log('Successfully retrieved base recipe details');
+                    setBaseRecipe(res.data.name);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
         }
-    }, [data]);
+    }, [data, instrImagesLoaded, setInstrImagesLoaded]);
 
     if (error && error.status === 404) {
         return (
@@ -174,16 +208,32 @@ function EditRecipe() {
         console.log(dataToSend);
 
         fetchBackend
-            .post(`/recipes/${recipeId}/update-recipe/`, dataToSend)
+            .post(`/recipes/${fromCard ? recipeId : recipeIdPath}/update-recipe/`, dataToSend)
             .then((response) => {
-                // From response, if successful, get the recipe ID. So update the recipe context.
+                console.log('Successfully edited recipe');
+                navigate('/');
             })
-            .catch((error) => {});
+            .catch((error) => {
+                console.log(error);
+            });
     };
 
     const handleImages = (event) => {
         encodeImages(event, setImageName, setImagesEncoded);
     };
+
+    if (!instrImagesLoaded) {
+        return (
+            <Grid container spacing={2} sx={{ textAlign: 'center' }}>
+                <Grid item xs={12}>
+                    <Navbar></Navbar>
+                </Grid>
+                <Grid item xs={12}>
+                    <CircularProgress />
+                </Grid>
+            </Grid>
+        );
+    }
 
     return (
         <Grid container spacing={2} sx={{ textAlign: 'center' }}>

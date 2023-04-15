@@ -9,7 +9,9 @@ import { Typography } from '@mui/material';
 
 export default function AddInstructionsComponent({ instructions, setInstructions }) {
     const [instructionBody, setInstructionBody] = useState('');
-    const [instructionNum, setInstructionNum] = useState(1);
+    const [instructionNum, setInstructionNum] = useState(
+        instructions.length === 0 ? 1 : instructions[instructions.length - 1].step_number + 1
+    );
     const [cookingTime, setCookingTime] = useState(0);
     const [prepTime, setPrepTime] = useState(0);
     const [imageName, setImageName] = useState('');

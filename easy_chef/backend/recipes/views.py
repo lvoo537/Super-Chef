@@ -1,3 +1,4 @@
+import base64
 from django.http import *
 from django.shortcuts import *
 from rest_framework.authentication import TokenAuthentication
@@ -558,11 +559,13 @@ class RetrieveRecipeFilesView(APIView):
         files = []
         for recipe_file in recipe_files:
             file_path = recipe_file.file.path
-            file = open(file_path, 'rb')
-            files.append(file)
+            with open(file_path, 'rb') as file:
+                encoded_file = base64.b64encode(file.read()).decode('utf-8')
+                files.append(encoded_file)
 
-        response = FileResponse(files)
-        return response
+
+        data = {"files": files}
+        return JsonResponse(data)
 
 
 class RetrieveInstructionFilesView(APIView):
@@ -571,11 +574,12 @@ class RetrieveInstructionFilesView(APIView):
         files = []
         for instruction_file in instruction_files:
             file_path = instruction_file.file.path
-            file = open(file_path, 'rb')
-            files.append(file)
+            with open(file_path, 'rb') as file:
+                encoded_file = base64.b64encode(file.read()).decode('utf-8')
+                files.append(encoded_file)
 
-        response = FileResponse(files)
-        return response
+        data = {"files": files}
+        return JsonResponse(data)
 
 
 class AddToCartView(APIView):

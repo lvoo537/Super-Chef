@@ -45,7 +45,14 @@ function CreateRecipe() {
                 data.get('prep-time') !== '' ? parseInt(data.get('prep-time').toString()) : -1,
             base_recipe: data.get('base-recipe'),
             ingredients: ingredients,
-            instructions: instructions,
+            instructions: instructions.map((instr) => {
+                return {
+                    instruction: instr.instruction,
+                    step_number: instr.step_number,
+                    cooking_time: instr.cooking_time,
+                    prep_time: instr.prep_time
+                };
+            }),
             cuisine: cuisines,
             diets: diets
         };
