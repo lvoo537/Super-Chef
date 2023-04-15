@@ -49,28 +49,31 @@ const ingredientRows = [
 //     }
 // }, [data]);
 
-const recipeRows = [
-    {
-        id: 1,
-        recipeName: 'Chocolate Brownie',
-        ingredients: [
-            'Flour',
-            'Sugar',
-            'Salt',
-            'Baking powder',
-            'Baking soda',
-            'Butter',
-            'Eggs',
-            'Vanilla extract',
-            'Milk',
-            'Chocolate chips'
-        ]
-    }
-    // { id: 2, recipeName: 'Chocolate Brownie', ingredients: 'Snow' }
-];
+// const [formError, setFormError] = useState({
+//     errorOccurred: false,
+//     errorMsg: ''
+// });
 
 function ShoppingCart() {
     const navigate = useNavigate();
+    const [recipeRows, setRecipeRows] = useState([
+        {
+            id: 1,
+            recipeName: 'Chocolate Brownie',
+            ingredients: [
+                'Flour',
+                'Sugar',
+                'Salt',
+                'Baking powder',
+                'Baking soda',
+                'Butter',
+                'Eggs',
+                'Vanilla extract',
+                'Milk',
+                'Chocolate chips'
+            ]
+        }
+    ]);
 
     return (
         <Grid container spacing={2} sx={{ textAlign: 'center' }}>
@@ -78,10 +81,10 @@ function ShoppingCart() {
                 <Navbar></Navbar>
             </Grid>
             <Grid item xs={6}>
-                <CartRecipeTable rows={recipeRows} />
+                <CartRecipeTable rows={recipeRows} setRows={setRecipeRows} />
             </Grid>
             <Grid item xs={5}>
-                <CartIngredientTable rows={ingredientRows} setRows={setRows} />
+                <CartIngredientTable rows={ingredientRows} />
             </Grid>
         </Grid>
     );

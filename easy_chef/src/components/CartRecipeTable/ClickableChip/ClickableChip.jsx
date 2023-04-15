@@ -10,9 +10,9 @@ export default function ClickableChip(props) {
             <Chip
                 variant="outlined"
                 color="danger"
-                // onClick={props.onClick}
+                onClick={props.onClick}
                 endDecorator={
-                    <ChipDelete color="danger" variant="plain">
+                    <ChipDelete color="danger" variant="plain" onClick={props.onClick}>
                         <DeleteForever />
                     </ChipDelete>
                 }
