@@ -104,6 +104,10 @@ html, body {
 }
 
 .comment-buttons{
+    display: grid;
     padding-top: 1%;
+    grid-gap: 10%;
+    grid-template-columns: 1fr 1fr;
+    max-width: 35%
 }
 

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import fetchBackend from '../../Utils/fetchBackend';
 import Carousel from '../../components/Carousel/Carousel';
+import Carousell from './recipeDetailescarousel';
 import './recipedetails.css';
 import StarIcon from '@mui/icons-material/Star';
 import Box from '@mui/material/Box';
@@ -12,13 +13,16 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionDetails from '@mui/material/AccordionDetails';
+import encodeImages from '../../Utils/encodeImages';
 
 function RecipeDetailsPage() {
     const { recipeId } = useParams();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [data, setData] = useState([]);
     const [imageName, setImageName] = useState('');
+    const [recipeImages, setRecipeImages] = useState([]);
     const [imagesEncoded, setImagesEncoded] = useState([]);
+    const [ericimagesEncoded, setericImagesEncoded] = useState([]);
     const [value, setValue] = React.useState(0);
     const [average_rating_value, average_rating_setValue] = React.useState(0);
     const [hover, setHover] = React.useState(-1);
@@ -83,12 +87,12 @@ function RecipeDetailsPage() {
         if (response.ok) {
             const json = await response.json();
             const files = json.files;
-            encodeImages(files); // pass files to encodeImages
+            encodeImagess(files); // pass files to encodeImages
         } else {
             console.log('Response not ok:', response);
         }
     };
-    const encodeImages = (files) => {
+    const encodeImagess = (files) => {
         const encodedImages = [];
         for (let file of files) {
             const base64String = file; // replace with your base64 string
@@ -148,14 +152,12 @@ function RecipeDetailsPage() {
         return `${value} Star${value !== 1 ? 's' : ''}, ${labels[value]}`;
     }
 
-    // const encodeImagess = (files, setImageCount, setImagesEncoded) => {
-    //     const numSelected = `${files.length} Files Selected`;
-    //     setImageCount(numSelected);
-    //
-    //     for (let file of files) {
-    //         setImagesEncoded((prevState) => [...prevState, file]);
-    //     }
-    // };
+    const handleImages = (event) => {
+        const files = Array.from(event.target.files);
+        setRecipeImages(files);
+        encodeImages(event, setImageName, setericImagesEncoded);
+    };
+
     useEffect(() => {
         handleGetData();
         handleGetImages();
@@ -316,7 +318,25 @@ function RecipeDetailsPage() {
                     <Button variant="contained" type="submit" color="primary">
                         Post Comment!
                     </Button>
+
+                    <Button variant="contained" component="label">
+                        Upload Recipe Images
+                        <input
+                            type="file"
+                            accept="image/"
+                            hidden
+                            onChange={handleImages}
+                            multiple
+                        />
+                    </Button>
                 </div>
+                {ericimagesEncoded.length === 0 ? (
+                    <div></div>
+                ) : (
+                    <Grid item xs={12} display="flex" justifyContent="left-align" sx={{ pt: '2%' }}>
+                        <Carousell images={ericimagesEncoded} width={650} height={300} />
+                    </Grid>
+                )}
             </div>
         </>
     );
