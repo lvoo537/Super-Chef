@@ -9,16 +9,14 @@ import Paper from '@mui/material/Paper';
 import * as React from 'react';
 import Grid from '@mui/material/Unstable_Grid2';
 
-function secondsToHHMMSS(totalSeconds) {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+function minutesToTime(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = Math.floor(minutes % 60);
+    const seconds = Math.floor((minutes * 60) % 60);
 
-    const formattedHours = String(hours).padStart(2, '0');
-    const formattedMinutes = String(minutes).padStart(2, '0');
-    const formattedSeconds = String(seconds).padStart(2, '0');
+    const format = (value) => (value < 10 ? `0${value}` : value);
 
-    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+    return `${format(hours)}:${format(remainingMinutes)}:${format(seconds)}`;
 }
 
 /**
@@ -47,12 +45,12 @@ export default function RecipeInstructionsAccordion(props) {
                             <Typography sx={{ mb: 0.5 }} align="center">{`Cooking Time: ${
                                 typeof instruction.cooking_time === 'string'
                                     ? instruction.cooking_time
-                                    : secondsToHHMMSS(instruction.cooking_time)
+                                    : minutesToTime(instruction.cooking_time)
                             }`}</Typography>
                             <Typography sx={{ mb: 3 }} align="center">{`Prep. Time: ${
                                 typeof instruction.prep_time === 'string'
                                     ? instruction.prep_time
-                                    : secondsToHHMMSS(instruction.prep_time)
+                                    : minutesToTime(instruction.prep_time)
                             }`}</Typography>
                             {instruction.instructionImagesEncoded.length === 0 ? (
                                 <div></div>

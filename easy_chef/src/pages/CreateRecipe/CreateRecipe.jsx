@@ -26,6 +26,8 @@ function CreateRecipe() {
     const [recipeImages, setRecipeImages] = useState([]);
     const [instructions, setInstructions] = useState([]);
 
+    const [prepTime, setPrepTime] = useState(undefined);
+    const [cookingTime, setCookingTime] = useState(undefined);
     const [diets, setDiets] = React.useState([]);
     const [cuisines, setCuisines] = React.useState([]);
 
@@ -38,11 +40,9 @@ function CreateRecipe() {
         const dataToSend = {
             name: data.get('recipe-name'),
             cooking_time:
-                data.get('cooking-time') !== ''
-                    ? parseInt(data.get('cooking-time').toString())
-                    : -1,
+                data.get('cooking-time') !== '' ? parseInt(data.get('cooking-time').toString()) : 0,
             prep_time:
-                data.get('prep-time') !== '' ? parseInt(data.get('prep-time').toString()) : -1,
+                data.get('prep-time') !== '' ? parseInt(data.get('prep-time').toString()) : 0,
             base_recipe: data.get('base-recipe'),
             ingredients: ingredients,
             instructions: instructions.map((instr) => {
@@ -159,7 +159,31 @@ function CreateRecipe() {
                                 label="Cooking Time"
                                 variant="outlined"
                                 type="number"
+                                value={cookingTime}
                                 InputProps={{ inputProps: { min: 0 } }}
+                                error={formError.errorOccurred}
+                                helperText={formError.errorMsg}
+                                onChange={(event) => {
+                                    const inputVal = parseInt(event.target.value, 10);
+                                    const maxCookingTime = 24 * 60;
+
+                                    if (
+                                        !isNaN(inputVal) &&
+                                        inputVal >= 0 &&
+                                        inputVal <= maxCookingTime
+                                    ) {
+                                        setCookingTime(inputVal);
+                                        setFormError({
+                                            errorOccurred: false,
+                                            errorMsg: ''
+                                        });
+                                    } else {
+                                        setFormError({
+                                            errorOccurred: true,
+                                            errorMsg: `Time must be between 0 and ${maxCookingTime}`
+                                        });
+                                    }
+                                }}
                             />
                         </Grid>
                         <Grid item xs={1}>
@@ -169,7 +193,31 @@ function CreateRecipe() {
                                 label="Prep Time"
                                 variant="outlined"
                                 type="number"
+                                value={prepTime}
                                 InputProps={{ inputProps: { min: 0 } }}
+                                error={formError.errorOccurred}
+                                helperText={formError.errorMsg}
+                                onChange={(event) => {
+                                    const inputVal = parseInt(event.target.value, 10);
+                                    const maxPrepTime = 24 * 60;
+
+                                    if (
+                                        !isNaN(inputVal) &&
+                                        inputVal >= 0 &&
+                                        inputVal <= maxPrepTime
+                                    ) {
+                                        setPrepTime(inputVal);
+                                        setFormError({
+                                            errorOccurred: false,
+                                            errorMsg: ''
+                                        });
+                                    } else {
+                                        setFormError({
+                                            errorOccurred: true,
+                                            errorMsg: `Time must be between 0 and ${maxPrepTime}`
+                                        });
+                                    }
+                                }}
                             />
                         </Grid>
                         <Grid item xs={1} marginLeft={0} marginTop={0}>
