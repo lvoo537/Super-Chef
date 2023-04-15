@@ -11,12 +11,10 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Navbar from '../../components/Navbar/Navbar';
-import { useAuthContext } from '../../contexts/Auth/AuthContext';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import fetchBackend from '../../Utils/fetchBackend';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { useAuthContext } from '../../contexts/Auth/AuthContext';
 
 const theme = createTheme();
 

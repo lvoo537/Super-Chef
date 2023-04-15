@@ -1,4 +1,3 @@
-import base64
 from django.http import *
 from django.shortcuts import *
 from rest_framework.authentication import TokenAuthentication
@@ -86,7 +85,6 @@ class RecipeFileUpdate(APIView):
         return Response(response_data, status=201)
 
 
-
 class UpdateRecipe(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
 
@@ -105,8 +103,7 @@ class UpdateRecipe(APIView):
         if base_recipe_name:
             # Find the base recipe in the database by its name
             try:
-                base_recipe = Recipe.objects.filter(name__iexact=base_recipe_name).first()
-                base_recipe = base_recipe.id
+                base_recipe = Recipe.objects.get(id=base_recipe_name)
                 is_there_a_base_recipe = True
             except Recipe.DoesNotExist:
                 # Base recipe does not exist in the database
@@ -245,6 +242,7 @@ class UpdateRecipe(APIView):
         response_data = {'Success message': 'Updated the Recipe successfully.'}
         return Response(response_data, status=201)
 
+
 class CreateView(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
 
@@ -256,8 +254,7 @@ class CreateView(APIView):
         if base_recipe_name:
             # Find the base recipe in the database by its name
             try:
-                base_recipe = Recipe.objects.filter(name__iexact=base_recipe_name).first()
-                base_recipe = base_recipe.id
+                base_recipe = Recipe.objects.get(id=base_recipe_name)
                 is_there_a_base_recipe = True
             except Recipe.DoesNotExist:
                 # Base recipe does not exist in the database
@@ -270,24 +267,19 @@ class CreateView(APIView):
         if request.data['prep_time']:
             prep_time = timedelta(minutes=request.data['prep_time'])
             request.data['prep_time'] = prep_time
+            print("sa")
         request.data['owner'] = request.user.id
-        if is_there_a_base_recipe:
-            request.data['base_recipe'] = base_recipe
         recipe_serializer = RecipeSerializer(data=request.data)
 
         if recipe_serializer.is_valid():
-
             recipe = recipe_serializer.save()
         else:
             errors.update(recipe_serializer.errors)
             return Response(errors, status=400)
-#
-#         if is_there_a_base_recipe:
-#
-#             recipe.base_recipe = base_recipe
-#             recipe.save()
 
-
+        if is_there_a_base_recipe:
+            recipe.base_recipe = base_recipe
+            recipe.save()
 
         # Create Cuisine Serializers
         cuisine_serializers = []
@@ -392,8 +384,9 @@ class CreateView(APIView):
         #     obj.add(recipe)
 
         # Return response
-        response_data = {'recipe_id': recipe.id, 'Success message': 'Created the Recipe successfully.'}
+        response_data = {'Success message': 'Created the Recipe successfully.'}
         return Response(response_data, status=201)
+
 
 class RecipeFileUpload(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
@@ -448,12 +441,10 @@ class InstructionFileUpload(APIView):
                 file_list = file_dict.getlist(file_key)
                 for file in file_list:
                     name = file.name
-                    print(name)
                     InstructionFile.objects.create(name=name,
                                                    recipe=instruction,
                                                    file=file)
         # Return response
-        print(files)
         response_data = {'Success message': 'Uploaded the file successfully.'}
         return Response(response_data, status=201)
 
@@ -555,25 +546,15 @@ class RetrieveCommentFilesView(APIView):
 
 class RetrieveRecipeFilesView(APIView):
     def get(self, request, recipe_id):
-#         recipe_files = RecipeFile.objects.filter(recipe=recipe_id)
-#         files = []
-#         for recipe_file in recipe_files:
-#             file_path = recipe_file.file.path
-#             file = open(file_path, 'rb')
-#             files.append(file)
-#
-#         response = FileResponse(files)
-#         return response
         recipe_files = RecipeFile.objects.filter(recipe=recipe_id)
         files = []
         for recipe_file in recipe_files:
             file_path = recipe_file.file.path
-            with open(file_path, 'rb') as file:
-                encoded_file = base64.b64encode(file.read()).decode('utf-8')
-                files.append(encoded_file)
-        # Return a JSON response with the base64-encoded file data
-        data = {"files": files}
-        return JsonResponse(data)
+            file = open(file_path, 'rb')
+            files.append(file)
+
+        response = FileResponse(files)
+        return response
 
 
 class RetrieveInstructionFilesView(APIView):
@@ -582,17 +563,14 @@ class RetrieveInstructionFilesView(APIView):
         files = []
         for instruction_file in instruction_files:
             file_path = instruction_file.file.path
-            with open(file_path, 'rb') as file:
-                encoded_file = base64.b64encode(file.read()).decode('utf-8')
-                files.append(encoded_file)
+            file = open(file_path, 'rb')
+            files.append(file)
 
-        data = {"files": files}
-        return JsonResponse(data)
+        response = FileResponse(files)
+        return response
 
 
 class AddToCartView(APIView):
-    permission_classes = [IsAuthenticated, IsTokenValid]
-
     def post(self, request, recipe_id):
         user = request.user
         try:
@@ -611,7 +589,6 @@ class ReturnAllRecipes(ListAPIView):
     def get_queryset(self):
         return Recipe.objects.all()
 
-
 class ShoppingLists(APIView):
 
     """
@@ -629,6 +606,7 @@ class ShoppingLists(APIView):
     def get(self, request):
 
         user = request.user
+
         if user is None:
             return HttpResponseBadRequest("User not found")
 
@@ -642,21 +620,18 @@ class ShoppingLists(APIView):
         recipes = shopping_list.recipes.all()
         if recipes is None:
             return HttpResponseBadRequest("List of recipes are required")
+        result_json = {'id': []}
 
-        serializer = RecipeSerializer(recipes, many=True)
-        result_json = {'recipes': serializer.data}
-        return Response(result_json)
-
-#         for recipe in recipes:
-#             result_json['id'].append(recipe.id)
-#             # result_json[recipe.name] = {}
-#             # for ingredient in recipe.ingredients.all():
-#             #     result_json[recipe.name][ingredient.name] = {
-#             #         'amount': ingredient.quantity,
-#             #         'unit_of_measure': ingredient.unit_of_measure
-#             #     }
-#             # result_json[recipe.name]['servings'] = recipe.servings
-#         return JsonResponse(result_json, status=200)
+        for recipe in recipes:
+            result_json['id'].append(recipe.id)
+            # result_json[recipe.name] = {}
+            # for ingredient in recipe.ingredients.all():
+            #     result_json[recipe.name][ingredient.name] = {
+            #         'amount': ingredient.quantity,
+            #         'unit_of_measure': ingredient.unit_of_measure
+            #     }
+            # result_json[recipe.name]['servings'] = recipe.servings
+        return JsonResponse(result_json, status=200)
 
 
 class UpdateRecipeServings(APIView):
