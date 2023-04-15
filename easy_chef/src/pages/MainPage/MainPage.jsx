@@ -58,6 +58,7 @@ function MainPage() {
                                 recipeDescription={`Cooking Time: ${recipe.cooking_time}, Prep. Time: ${recipe.prep_time}`}
                                 recipeImg="https://source.unsplash.com/random"
                                 recipeId={recipe.id}
+                                recipeDesc2={`Favorites: ${recipe.total_users_marked_favorite}, Ratings: ${recipe.number_of_users_rated}`}
                             />
                         </Grid>
                     );

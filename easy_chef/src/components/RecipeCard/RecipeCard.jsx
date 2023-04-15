@@ -8,7 +8,13 @@ import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
 import { useRecipeContext } from '../../contexts/RecipeContext/RecipeContext';
 
-export default function RecipeCard({ recipeImg, recipeName, recipeDescription, recipeId }) {
+export default function RecipeCard({
+    recipeImg,
+    recipeName,
+    recipeDescription,
+    recipeId,
+    recipeDesc2
+}) {
     const navigate = useNavigate();
     let recipeDescShortened = recipeDescription;
 
@@ -48,6 +54,13 @@ export default function RecipeCard({ recipeImg, recipeName, recipeDescription, r
                     <Typography variant="body2" color="text.secondary">
                         {recipeDescShortened}
                     </Typography>
+                    {recipeDesc2 === undefined ? (
+                        <div></div>
+                    ) : (
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                            {recipeDesc2}
+                        </Typography>
+                    )}
                 </CardContent>
                 {recipeId === undefined ? (
                     <div></div>
