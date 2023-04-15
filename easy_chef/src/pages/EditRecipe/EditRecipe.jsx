@@ -1,10 +1,10 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useRecipeContext } from '../../contexts/RecipeContext/RecipeContext';
 import { useEffect, useState } from 'react';
 import * as React from 'react';
 import fetchBackend from '../../Utils/fetchBackend';
-import encodeImages from '../../Utils/encodeImages';
-import { Box, Grid, TextField, Typography } from '@mui/material';
+import encodeImages, { encodeImagesFromDb } from '../../Utils/encodeImages';
+import { Box, CircularProgress, Grid, TextField, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
 import Button from '@mui/material/Button';
 import Carousel from '../../components/Carousel/Carousel';
@@ -38,8 +38,9 @@ function EditRecipe() {
     // by fetching existing recipe details from backend using current recipe ID.
     // Then, be able to update the recipe information using the current recipe ID and
     // hitting the backend endpoint.
+    const { recipeIdPath } = useParams();
     const navigate = useNavigate();
-    const { recipeId } = useRecipeContext();
+    const { recipeId, fromCard } = useRecipeContext();
     const [formError, setFormError] = useState({
         errorOccurred: false,
         errorMsg: ''
@@ -52,6 +53,8 @@ function EditRecipe() {
     const [imagesEncoded, setImagesEncoded] = useState([]);
     // array of instruction objects
     const [instructions, setInstructions] = useState([]);
+    const [instrImagesEncoded, setInstrImagesEncoded] = useState('');
+    const [instrImagesLoaded, setInstrImagesLoaded] = useState(false);
 
     // array of strings denoting diet names
     const [diets, setDiets] = React.useState([]);
@@ -65,34 +68,121 @@ function EditRecipe() {
     const [recipeName, setRecipeName] = React.useState('');
     const [cookingTime, setCookingTime] = React.useState(0);
     const [prepTime, setPrepTime] = React.useState(0);
-    const [baseRecipe, setBaseRecipe] = React.useState('');
+    const [owner, setOwner] = React.useState('');
+    // const [baseRecipe, setBaseRecipe] = React.useState('');
 
-    const getRecipeDetailsUrl = `/recipes/edit-recipe/${recipeId}`;
+    const getRecipeDetailsUrl = `http://localhost:8000/recipes/recipe-details/${
+        fromCard ? recipeId : recipeIdPath
+    }/`;
     const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
     const { data, error } = useSWR(getRecipeDetailsUrl, fetcher);
 
+    function timeStringToSeconds(timeString) {
+        const [hours, minutes, seconds] = timeString.split(':').map(Number);
+        return hours * 3600 + minutes * 60 + seconds;
+    }
+
+    let ingredientIdCounter = 0;
     useEffect(() => {
         if (data) {
-            // Set states from data.data
-            // Assuming that data.data is the response data...
-            setIngredients(data.data.ingredients);
-            setImagesEncoded(data.data.recipeImages);
-            setInstructions(data.data.instructions);
-            // Assuming data.data.diets = [String] and data.data.cuisines = [String]
-            setDefaultDietRow(
-                data.data.diets.map((dietName) => createDefaultSingleRow('Diets', dietName))
+            console.log(data);
+            setIngredients(
+                data.ingredients.map((ingredient, index) => {
+                    ingredientIdCounter += 1;
+                    return {
+                        id: `id-from-db-${ingredientIdCounter}`,
+                        name: ingredient.name,
+                        quantity: parseInt(ingredient.quantity),
+                        unit_of_measure: ingredient.unit_of_measure
+                    };
+                })
             );
+            // TODO: Get images related to recipeId
+            fetchBackend
+                .get(`/recipes/${data.id}/retrieve-recipe-files`)
+                .then((res) => {
+                    // console.log(res.data);
+                    console.log('Successfully retrieved recipe images');
+                    encodeImagesFromDb(res.data.files, setImagesEncoded);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+            // setImagesEncoded([]);
+            const instructionsResponse = data.instructions;
+
+            for (let i = 0; i < instructionsResponse.length; i++) {
+                const instr = instructionsResponse[i];
+                fetchBackend
+                    .get(`/recipes/${instr.id}/retrieve-instruction-files`)
+                    .then((res) => {
+                        console.log(`Successfully retrieved instruction images for ${instr.id}`);
+                        encodeImagesFromDb(res.data.files, setInstrImagesEncoded);
+                        instr.instructionImagesEncoded = instrImagesEncoded;
+                        if (i === instructionsResponse.length - 1) {
+                            setInstructions(instructionsResponse);
+                            setInstrImagesLoaded(true);
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            }
+            setDefaultDietRow(data.diets.map((diet) => createDefaultSingleRow('Diets', diet.name)));
             setDefaultCuisineRow(
-                data.data.cuisines.map((cuisineName) =>
-                    createDefaultSingleRow('Cuisines', cuisineName)
-                )
+                data.cuisines.map((cuisine) => createDefaultSingleRow('Cuisines', cuisine.name))
             );
-            setRecipeName(data.data.recipeName);
-            setCookingTime(data.data.cookingTime);
-            setPrepTime(data.data.prepTime);
-            setBaseRecipe(data.data.baseRecipe);
+            setRecipeName(data.name);
+            setCookingTime(timeStringToSeconds(data.cooking_time));
+            setPrepTime(timeStringToSeconds(data.prep_time));
+            setOwner(data.owner);
+            // const baseRecipeId = data.base_recipe === null ? '' : data.base_recipe;
+            // if (baseRecipeId === '') setBaseRecipe('');
+            // fetchBackend
+            //     .get(`/recipes/recipe-details/${baseRecipeId}`)
+            //     .then((res) => {
+            //         console.log('Successfully retrieved base recipe details');
+            //         setBaseRecipe(res.data.name);
+            //     })
+            //     .catch((err) => {
+            //         console.log(err);
+            //     });
         }
-    }, [data]);
+    }, [data, instrImagesLoaded, setInstrImagesLoaded]);
+
+    if (error && error.status === 404) {
+        return (
+            <Grid container spacing={2} sx={{ textAlign: 'center' }}>
+                <Grid item xs={12}>
+                    <Navbar></Navbar>
+                </Grid>
+                <Grid item xs={12}>
+                    <Box>
+                        <Typography variant="h5">Recipe Not Found</Typography>
+                    </Box>
+                </Grid>
+            </Grid>
+        );
+    } else if (error) {
+        return (
+            <Grid container spacing={2} sx={{ textAlign: 'center' }}>
+                <Grid item xs={12}>
+                    <Navbar></Navbar>
+                </Grid>
+                <Grid item xs={12}>
+                    <Box sx={{ mt: 8 }}>
+                        <Typography variant="h5">Failed to get recipe details...</Typography>
+                        <Typography variant="body1" sx={{ mt: 2, color: 'red' }}>
+                            {`Error Message: ${error.response.statusText}`}
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: 'red' }}>
+                            {`Error Status Code: ${error.response.status}`}
+                        </Typography>
+                    </Box>
+                </Grid>
+            </Grid>
+        );
+    }
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -101,34 +191,50 @@ function EditRecipe() {
         const data = new FormData(event.currentTarget);
         // TODO: Get recipe name, cooking time, recipe images, ingredients, instructions
         const dataToSend = {
-            recipeName: data.get('recipe-name'),
-            cookingTime:
-                data.get('cooking-time') !== ''
-                    ? parseInt(data.get('cooking-time').toString())
-                    : -1,
-            prepTime:
-                data.get('prep-time') !== '' ? parseInt(data.get('prep-time').toString()) : -1,
-            baseRecipe: data.get('base-recipe'),
-            recipeImages: imagesEncoded,
+            name: data.get('recipe-name'),
+            // base_recipe: data.get('base-recipe'),
             ingredients: ingredients,
             instructions: instructions,
             cuisine: cuisines,
-            diets: diets
+            diets: diets,
+            owner
         };
+        if (data.get('cooking-time') !== '') {
+            dataToSend.cooking_time = parseInt(data.get('cooking-time'));
+        }
+        if (data.get('prep-time') !== '') {
+            dataToSend.prep_time = parseInt(data.get('prep-time'));
+        }
 
         console.log(dataToSend);
 
         fetchBackend
-            .post('/recipes/create-recipe', dataToSend)
+            .post(`/recipes/${fromCard ? recipeId : recipeIdPath}/update-recipe/`, dataToSend)
             .then((response) => {
-                // From response, if successful, get the recipe ID. So update the recipe context.
+                console.log('Successfully edited recipe');
+                navigate('/');
             })
-            .catch((error) => {});
+            .catch((error) => {
+                console.log(error);
+            });
     };
 
     const handleImages = (event) => {
         encodeImages(event, setImageName, setImagesEncoded);
     };
+
+    if (!instrImagesLoaded) {
+        return (
+            <Grid container spacing={2} sx={{ textAlign: 'center' }}>
+                <Grid item xs={12}>
+                    <Navbar></Navbar>
+                </Grid>
+                <Grid item xs={12}>
+                    <CircularProgress />
+                </Grid>
+            </Grid>
+        );
+    }
 
     return (
         <Grid container spacing={2} sx={{ textAlign: 'center' }}>
@@ -150,6 +256,7 @@ function EditRecipe() {
                                 id="recipe-name"
                                 label="Recipe Name"
                                 variant="outlined"
+                                focused
                                 value={recipeName}
                                 onChange={(event) => setRecipeName(event.target.value.toString())}
                             />
@@ -161,11 +268,12 @@ function EditRecipe() {
                                 label="Cooking Time"
                                 variant="outlined"
                                 type="number"
+                                focused
                                 InputProps={{ inputProps: { min: 0 } }}
-                                value={cookingTime === 0 ? undefined : cookingTime}
-                                onChange={(event) =>
-                                    setCookingTime(parseInt(event.target.value.toString()))
-                                }
+                                value={cookingTime}
+                                onChange={(event) => {
+                                    setCookingTime(parseInt(event.target.value));
+                                }}
                             />
                         </Grid>
                         <Grid item xs={1}>
@@ -175,11 +283,12 @@ function EditRecipe() {
                                 label="Prep Time"
                                 variant="outlined"
                                 type="number"
+                                focused
                                 InputProps={{ inputProps: { min: 0 } }}
-                                value={prepTime === 0 ? undefined : prepTime}
-                                onChange={(event) =>
-                                    setPrepTime(parseInt(event.target.value.toString()))
-                                }
+                                value={prepTime}
+                                onChange={(event) => {
+                                    setPrepTime(parseInt(event.target.value));
+                                }}
                             />
                         </Grid>
                         <Grid item xs={1} marginLeft={0} marginTop={0}>
@@ -199,16 +308,16 @@ function EditRecipe() {
                                 Submit Edited Recipe
                             </Button>
                         </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                name="base-recipe"
-                                id="base-recipe"
-                                label="Base Recipe"
-                                sx={{ width: 500 }}
-                                value={baseRecipe}
-                                onChange={(event) => setBaseRecipe(event.target.value)}
-                            />
-                        </Grid>
+                        {/*<Grid item xs={12}>*/}
+                        {/*    <TextField*/}
+                        {/*        name="base-recipe"*/}
+                        {/*        id="base-recipe"*/}
+                        {/*        label="Base Recipe"*/}
+                        {/*        sx={{ width: 500 }}*/}
+                        {/*        value={baseRecipe}*/}
+                        {/*        onChange={(event) => setBaseRecipe(event.target.value)}*/}
+                        {/*    />*/}
+                        {/*</Grid>*/}
                         {imagesEncoded.length === 0 ? (
                             <div></div>
                         ) : (

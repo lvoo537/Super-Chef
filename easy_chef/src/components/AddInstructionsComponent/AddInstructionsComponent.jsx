@@ -9,15 +9,19 @@ import { Typography } from '@mui/material';
 
 export default function AddInstructionsComponent({ instructions, setInstructions }) {
     const [instructionBody, setInstructionBody] = useState('');
-    const [instructionNum, setInstructionNum] = useState(1);
+    const [instructionNum, setInstructionNum] = useState(
+        instructions.length === 0 ? 1 : instructions[instructions.length - 1].step_number + 1
+    );
     const [cookingTime, setCookingTime] = useState(0);
     const [prepTime, setPrepTime] = useState(0);
     const [imageName, setImageName] = useState('');
     const [imagesEncoded, setImagesEncoded] = useState([]);
+    const [rawImages, setRawImages] = useState([]);
     const handleImages = (event) => {
         const files = Array.from(event.target.files);
         const numSelected = `${files.length} Files Selected`;
         setImageName(numSelected);
+        setRawImages(files);
 
         for (let file of files) {
             const reader = new FileReader();
@@ -32,10 +36,11 @@ export default function AddInstructionsComponent({ instructions, setInstructions
     const handleAddInstruction = () => {
         const newInstruction = {
             instruction: instructionBody,
-            stepNumber: instructionNum,
-            cookingTime,
-            prepTime,
-            instructionImages: imagesEncoded
+            step_number: instructionNum,
+            cooking_time: cookingTime,
+            prep_time: prepTime,
+            instructionImagesEncoded: imagesEncoded,
+            instructionImages: rawImages
         };
         setInstructions((prevState) => [...prevState, newInstruction]);
         setInstructionNum((prevState) => prevState + 1);
@@ -88,6 +93,7 @@ export default function AddInstructionsComponent({ instructions, setInstructions
                             sx={{ width: 650 }}
                             value={instructionBody}
                             onChange={(e) => setInstructionBody(e.target.value)}
+                            required={instructions.length === 0}
                         />
                     </Grid>
                     <Grid item xs={12}>

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useRecipeContext } from '../../contexts/RecipeContext/RecipeContext';
 import { useState } from 'react';
-import fetchBackend from '../../Utils/fetchBackend';
+import fetchBackend, { fetchBackendImg } from '../../Utils/fetchBackend';
 import encodeImages from '../../Utils/encodeImages';
 import { Grid, TextField, Box, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
@@ -15,7 +15,7 @@ import DietsCuisineTable from '../../components/DietsCuisineTable/DietsCuisineTa
 
 function CreateRecipe() {
     const navigate = useNavigate();
-    const { setRecipeId } = useRecipeContext();
+    const { recipeId, setRecipeId } = useRecipeContext();
     const [formError, setFormError] = useState({
         errorOccurred: false,
         errorMsg: ''
@@ -23,6 +23,7 @@ function CreateRecipe() {
     const [ingredients, setIngredients] = useState([]);
     const [imageName, setImageName] = useState('');
     const [imagesEncoded, setImagesEncoded] = useState([]);
+    const [recipeImages, setRecipeImages] = useState([]);
     const [instructions, setInstructions] = useState([]);
 
     const [diets, setDiets] = React.useState([]);
@@ -35,17 +36,23 @@ function CreateRecipe() {
         const data = new FormData(event.currentTarget);
         // TODO: Get recipe name, cooking time, recipe images, ingredients, instructions
         const dataToSend = {
-            recipeName: data.get('recipe-name'),
-            cookingTime:
+            name: data.get('recipe-name'),
+            cooking_time:
                 data.get('cooking-time') !== ''
                     ? parseInt(data.get('cooking-time').toString())
                     : -1,
-            prepTime:
+            prep_time:
                 data.get('prep-time') !== '' ? parseInt(data.get('prep-time').toString()) : -1,
-            baseRecipe: data.get('base-recipe'),
-            recipeImages: imagesEncoded,
+            base_recipe: data.get('base-recipe'),
             ingredients: ingredients,
-            instructions: instructions,
+            instructions: instructions.map((instr) => {
+                return {
+                    instruction: instr.instruction,
+                    step_number: instr.step_number,
+                    cooking_time: instr.cooking_time,
+                    prep_time: instr.prep_time
+                };
+            }),
             cuisine: cuisines,
             diets: diets
         };
@@ -53,14 +60,72 @@ function CreateRecipe() {
         console.log(dataToSend);
 
         fetchBackend
-            .post('/recipes/create-recipe', dataToSend)
+            .post('/recipes/create/', dataToSend)
             .then((response) => {
-                // From response, if successful, get the recipe ID. So update the recipe context.
+                console.log('Successfully created recipe');
+                const recipeIdResponse = response.data.recipe_id;
+                setRecipeId(recipeIdResponse);
+
+                const formDataRecipeImg = new FormData();
+                if (recipeImages.length !== 0) {
+                    recipeImages.map((img, index) => {
+                        formDataRecipeImg.append('file' + index, img);
+                    });
+                }
+                fetchBackendImg
+                    .post(`/recipes/${recipeIdResponse}/upload-recipe/`, formDataRecipeImg)
+                    .then((response) => {
+                        console.log(response);
+                        console.log('Successfully uploaded recipe images');
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+
+                fetchBackend
+                    .get(`/recipes/recipe-details/${recipeIdResponse}/`)
+                    .then((response) => {
+                        console.log('Successfully retrieved recipe details');
+                        const detailsInstructions = response.data.instructions;
+                        for (let instr of detailsInstructions) {
+                            for (let instruction of instructions) {
+                                if (instruction.step_number === instr.step_number) {
+                                    const formData = new FormData();
+                                    if (instruction.instructionImages) {
+                                        instruction.instructionImages.map((image, index) => {
+                                            formData.append('file' + index, image);
+                                        });
+                                    }
+                                    console.log(formData);
+                                    fetchBackendImg
+                                        .post(`/recipes/${instr.id}/upload-instruction/`, formData)
+                                        .then((response) => {
+                                            console.log(response);
+                                            console.log(
+                                                `Successfully uploaded instruction id: ${instr.id}`
+                                            );
+                                            navigate('/');
+                                        })
+                                        .catch((error) => {
+                                            console.log(error);
+                                        });
+                                    break;
+                                }
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
             })
-            .catch((error) => {});
+            .catch((error) => {
+                console.log(error);
+            });
     };
 
     const handleImages = (event) => {
+        const files = Array.from(event.target.files);
+        setRecipeImages(files);
         encodeImages(event, setImageName, setImagesEncoded);
     };
 
@@ -84,6 +149,7 @@ function CreateRecipe() {
                                 id="recipe-name"
                                 label="Recipe Name"
                                 variant="outlined"
+                                required
                             />
                         </Grid>
                         <Grid item xs={1}>

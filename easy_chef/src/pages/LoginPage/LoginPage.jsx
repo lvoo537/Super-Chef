@@ -51,9 +51,7 @@ function LoginPage() {
                 navigate('/');
             })
             .catch((error) => {
-                if (error.response.status === 401) {
-                    setFormError({ errorOccurred: true, errorMsg: error.response.data });
-                }
+                navigate('/login');
             });
     };
 
@@ -104,10 +102,6 @@ function LoginPage() {
                                     autoComplete="current-password"
                                     error={formError.errorOccurred}
                                     helperText={formError.errorMsg}
-                                />
-                                <FormControlLabel
-                                    control={<Checkbox value="remember" color="primary" />}
-                                    label="Remember me"
                                 />
                                 <Button
                                     type="submit"
