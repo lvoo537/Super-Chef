@@ -13,7 +13,7 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import encodeImages from '../../Utils/encodeImages';
+import encodeImages, { encodeImagesFromDb } from '../../Utils/encodeImages';
 
 function RecipeDetailsPage() {
     const { recipeId } = useParams();
@@ -22,6 +22,7 @@ function RecipeDetailsPage() {
     const [imageName, setImageName] = useState('');
     const [recipeImages, setRecipeImages] = useState([]);
     const [imagesEncoded, setImagesEncoded] = useState([]);
+    const [instructionimagesEncoded, setinstructionImagesEncoded] = useState([]);
     const [ericimagesEncoded, setericImagesEncoded] = useState([]);
     const [value, setValue] = React.useState(0);
     const [average_rating_value, average_rating_setValue] = React.useState(0);
@@ -30,6 +31,7 @@ function RecipeDetailsPage() {
     const [base_recipe, setbase_recipe] = useState(null);
     const [servings, setServings] = useState(0);
     const [instructions, setInstructions] = useState([]);
+    const [instrImagesLoaded, setInstrImagesLoaded] = useState(false);
     // Handle login form submission
     // const handleLogin = async (event = undefined) => {
     //     if (event) {
@@ -67,10 +69,52 @@ function RecipeDetailsPage() {
                     setbase_recipe(data.base_recipe);
                 }
                 setServings(servings);
+                const instructionsResponse = data.instructions;
+                if (instructionsResponse.length === 0) setInstrImagesLoaded(true);
+
+                // Use Promise.all to wait for all the async operations to finish
+                await Promise.all(
+                    instructionsResponse.map(async (instr) => {
+                        try {
+                            const res = await fetchBackend.get(
+                                `/recipes/${instr.id}/retrieve-instruction-files/`
+                            );
+                            console.log(`Successfully retrieved images for ${instr.id}`);
+                            const encodedImages = await encodeImagesFromDb(res.data.files);
+                            instr.instructionImagesEncoded = encodedImages;
+                        } catch (err) {
+                            console.log(err);
+                        }
+                    })
+                );
+
+                setInstructions(instructionsResponse);
+                setInstrImagesLoaded(true);
+                // const instructionsResponse = data.instructions;
+                // if (instructionsResponse.length === 0) setInstrImagesLoaded(true);
+                //
+                // for (let i = 0; i < instructionsResponse.length; i++) {
+                //     const instr = instructions[i];
+                //     fetchBackend
+                //         .get(`/recipes/${instr.id}/retrieve-instruction-files/`)
+                //         .then((res) => {
+                //             console.log(`Successfully retrieved images for ${instr.id}`);
+                //             encodeImagesFromDb(res.data.files, setinstructionImagesEncoded);
+                //             instr.instructionImagesEncoded = instructionimagesEncoded;
+                //             if (i === instructionsResponse.length - 1) {
+                //                 setInstructions(instructionsResponse);
+                //                 setInstrImagesLoaded(true);
+                //             }
+                //         })
+                //         .catch((err) => {
+                //             console.log(err);
+                //         });
+                // }
                 setInstructions(data.instructions);
             }
         } catch (error) {
             console.error('Failed to fetch data');
+            console.log(error);
         }
     };
     const handleGetImages = async () => {
@@ -92,6 +136,45 @@ function RecipeDetailsPage() {
             console.log('Response not ok:', response);
         }
     };
+
+    const handleGetinstructionImages = async (instruction_id) => {
+        const token = localStorage.getItem('access');
+        const response = await fetch(
+            `http://127.0.0.1:8000/recipes/${instruction_id}/retrieve-instruction-files/`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.ok) {
+            const json = await response.json();
+            const files = json.files;
+            promiseencodeImagess(files); // pass files to encodeImages
+        } else {
+            console.log('Response not ok:', response);
+        }
+    };
+    const promiseencodeImagess = (file) => {
+        return new Promise((resolve, reject) => {
+            const base64String = file; // replace with your base64 string
+            const byteCharacters = atob(base64String);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray]);
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => {
+                resolve(reader.result);
+            };
+            reader.onerror = reject;
+        });
+    };
+
     const encodeImagess = (files) => {
         const encodedImages = [];
         for (let file of files) {
@@ -112,6 +195,7 @@ function RecipeDetailsPage() {
             };
         }
     };
+
     const getMyRating = async () => {
         const token = localStorage.getItem('access');
         const response = await fetch(
@@ -181,6 +265,20 @@ function RecipeDetailsPage() {
         const [hours, minutes, seconds] = timeString.split(':');
         var totalTimeInMinutes = parseInt(hours) * 60 + parseInt(minutes);
     }
+
+    if (!instrImagesLoaded) {
+        return (
+            <Grid container spacing={2} sx={{ textAlign: 'center' }}>
+                <Grid item xs={12}>
+                    <Navbar />
+                </Grid>
+                <Grid item xs={12}>
+                    <CircularProgress />
+                </Grid>
+            </Grid>
+        );
+    }
+
     return (
         <>
             <Grid item xs={12}>
@@ -287,12 +385,28 @@ function RecipeDetailsPage() {
                                 aria-controls={`panel${index + 1}-content`}
                                 id={`panel${index + 1}-header`}
                             >
-                                <Typography>Step number: {instruction.step_number}</Typography>
+                                <Typography>Instruction: {instruction.step_number}</Typography>
                             </AccordionSummary>
                             <AccordionDetails>
-                                <Typography>Prep time: {instruction.prep_time}</Typography>
-                                <Typography>Cooking time: {instruction.cooking_time}</Typography>
+                                <div className="accordion-times">
+                                    <Typography style={{ marginRight: '9%' }}>
+                                        Prep time: {instruction.prep_time}
+                                    </Typography>
+
+                                    <Typography>
+                                        Cooking time: {instruction.cooking_time}
+                                    </Typography>
+                                </div>
+
                                 <br />
+                                {instruction.instructionImagesEncoded === undefined ||
+                                instruction.instructionImagesEncoded.length === 0 ? (
+                                    <div></div>
+                                ) : (
+                                    <div className="instruction-image">
+                                        <Carousel images={instruction.instructionImagesEncoded} />
+                                    </div>
+                                )}
                                 <Typography>
                                     Instructions:
                                     <br />

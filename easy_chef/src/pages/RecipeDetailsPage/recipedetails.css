@@ -111,3 +111,10 @@ html, body {
     max-width: 35%
 }
 
+.accordion-times {
+    display: flex;
+    /*justify-content: space-between;*/
+    /*margin: 2px;*/
+    justify-content: center;
+}
+
