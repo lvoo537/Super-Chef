@@ -8,6 +8,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import fetchBackend from '../../Utils/fetchBackend';
 import useSWR from 'swr';
+import { encodeImagesFromDb } from '../../Utils/encodeImages';
 
 function ViewProfile() {
     const [username, setUsername] = useState('');
@@ -18,6 +19,7 @@ function ViewProfile() {
     const [bio, setBio] = useState('');
     const [location, setLocation] = useState('');
     const [email, setEmail] = useState('');
+    const [avatar, setAvatar] = useState('');
 
     const getProfileUrl = `http://localhost:8000/accounts/get-user-info/`;
     const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
@@ -25,6 +27,14 @@ function ViewProfile() {
 
     useEffect(() => {
         if (data) {
+            if (data.avatar_img) {
+                encodeImagesFromDb([data.avatar_img]).then((encodedAvatar) => {
+                    console.log(encodedAvatar);
+                    setAvatar(encodedAvatar);
+                });
+            } else {
+                setAvatar('');
+            }
             setBio(data.bio !== null ? data.bio : '');
             setDob(data.date_of_birth);
             setEmail(data.email);
@@ -35,6 +45,19 @@ function ViewProfile() {
             setUsername(data.username);
         }
     }, [data]);
+
+    if (error) {
+        return (
+            <div>
+                <Navbar />
+                <Grid container spacing={2} paddingX="20%" marginTop={5}>
+                    <Grid item xs={12}>
+                        <Typography variant="h5">Failed to fetch user data.</Typography>
+                    </Grid>
+                </Grid>
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -120,7 +143,7 @@ function ViewProfile() {
                                     <Avatar
                                         sx={{ width: 200, height: 200, justifySelf: 'center' }}
                                         alt="Name"
-                                        src="/static/images/avatar/2.jpg"
+                                        src={avatar}
                                     />
                                 </Box>
                             </Grid>

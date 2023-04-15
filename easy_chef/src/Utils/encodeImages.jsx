@@ -21,6 +21,16 @@ const encodeImages = (event, setImageCount, setImagesEncoded) => {
     }
 };
 
+export const encodeImage = (event, setImageEncoded) => {
+    const files = Array.from(event.target.files);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        const base64String = reader.result;
+        setImageEncoded(base64String);
+    };
+    reader.readAsDataURL(files[0]);
+};
+
 export const encodeImagesFromDb = (files) => {
     const promises = files.map(
         (file) =>
