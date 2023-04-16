@@ -31,7 +31,7 @@ function App() {
                             <Route path="/login" element={<LoginPage />} />
                             <Route path="/register" element={<RegisterPage />} />
                             <Route path="/accounts/*" element={<PrivateRoute />}>
-                                <Route index element={<ViewProfile />} />
+                                <Route path="view-profile" element={<ViewProfile />} />
                                 <Route path="edit-profile" element={<EditProfile />} />
                                 <Route path="logout" element={<LogoutPage />} />
                                 <Route path="my-recipe" element={<MyRecipes />} />

@@ -3,17 +3,21 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Unstable_Grid2';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import RecipeInstructionsAccordion from '../RecipeInstructionsAccordion/RecipeInstructionsAccordion';
 import { Typography } from '@mui/material';
 
 export default function AddInstructionsComponent({ instructions, setInstructions }) {
+    const [formError, setFormError] = useState({
+        errorOccurred: false,
+        errorMsg: ''
+    });
     const [instructionBody, setInstructionBody] = useState('');
     const [instructionNum, setInstructionNum] = useState(
         instructions.length === 0 ? 1 : instructions[instructions.length - 1].step_number + 1
     );
-    const [cookingTime, setCookingTime] = useState(0);
-    const [prepTime, setPrepTime] = useState(0);
+    const [cookingTime, setCookingTime] = useState(undefined);
+    const [prepTime, setPrepTime] = useState(undefined);
     const [imageName, setImageName] = useState('');
     const [imagesEncoded, setImagesEncoded] = useState([]);
     const [rawImages, setRawImages] = useState([]);
@@ -53,6 +57,28 @@ export default function AddInstructionsComponent({ instructions, setInstructions
         setImagesEncoded([]);
     };
 
+    const handleTimeEvent = (event, type) => {
+        const inputVal = parseInt(event.target.value, 10);
+        const maxTime = 24 * 60;
+
+        if (!isNaN(inputVal) && inputVal >= 0 && inputVal <= maxTime) {
+            if (type === 'cooking') {
+                setCookingTime(inputVal);
+            } else if (type === 'prep') {
+                setPrepTime(inputVal);
+            }
+            setFormError({
+                errorOccurred: false,
+                errorMsg: ''
+            });
+        } else {
+            setFormError({
+                errorOccurred: true,
+                errorMsg: `Time must be between 0 and ${maxTime}`
+            });
+        }
+    };
+
     return (
         <div style={{ textAlign: 'start' }}>
             <RecipeInstructionsAccordion instructions={instructions} />
@@ -67,9 +93,11 @@ export default function AddInstructionsComponent({ instructions, setInstructions
                             label="Cooking Time"
                             variant="outlined"
                             value={cookingTime}
-                            onChange={(e) => setCookingTime(parseInt(e.target.value))}
+                            focused
+                            error={formError.errorOccurred}
+                            helperText={formError.errorMsg}
+                            onChange={(e) => handleTimeEvent(e, 'cooking')}
                             type="number"
-                            InputProps={{ inputProps: { min: 0 } }}
                         />
                     </Grid>
                     <Grid item xs={6}>
@@ -78,9 +106,11 @@ export default function AddInstructionsComponent({ instructions, setInstructions
                             label="Preparation Time"
                             variant="outlined"
                             value={prepTime}
-                            onChange={(e) => setPrepTime(parseInt(e.target.value))}
+                            focused
+                            error={formError.errorOccurred}
+                            helperText={formError.errorMsg}
+                            onChange={(e) => handleTimeEvent(e, 'prep')}
                             type="number"
-                            InputProps={{ inputProps: { min: 0 } }}
                         />
                     </Grid>
                     <Grid item xs={12}>

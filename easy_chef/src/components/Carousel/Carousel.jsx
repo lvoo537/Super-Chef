@@ -29,6 +29,10 @@ function Carousel({ images }) {
         setActiveStep(step);
     };
 
+    if (!images || !Array.isArray(images) || images.length === 0) {
+        return <div></div>;
+    }
+
     return (
         <Box sx={{ maxWidth: 400, flexGrow: 1 }}>
             <AutoPlaySwipeableViews

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Grid from '@mui/material/Unstable_Grid2';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -18,9 +18,10 @@ import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import Navbar from '../../components/Navbar/Navbar';
-import fetchBackend from '../../Utils/fetchBackend';
+import fetchBackend, { fetchBackendImg } from '../../Utils/fetchBackend';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
+import { encodeImage, encodeImagesFromDb } from '../../Utils/encodeImages';
 
 function EditProfile() {
     const navigate = useNavigate();
@@ -36,8 +37,10 @@ function EditProfile() {
     const [email, setEmail] = useState('');
     const [terms, setTerms] = useState(false);
     const [username, setUsername] = useState('');
+    const [avatar, setAvatar] = useState(undefined);
+    const [avatarReq, setAvatarReq] = useState(undefined);
 
-    const getProfileUrl = ``;
+    const getProfileUrl = `http://localhost:8000/accounts/get-user-info/`;
     const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
     const { data, error } = useSWR(getProfileUrl, fetcher);
 
@@ -45,6 +48,26 @@ function EditProfile() {
         errorStatus: false,
         errorMsg: <div></div>
     });
+
+    useEffect(() => {
+        if (data) {
+            if (data.avatar_img) {
+                encodeImagesFromDb([data.avatar_img]).then((encodedAvatar) => {
+                    setAvatar(encodedAvatar);
+                });
+            } else {
+                setAvatar('');
+            }
+            setBio(data.bio !== null ? data.bio : '');
+            setDob(data.date_of_birth);
+            setEmail(data.email);
+            setFirstName(data.first_name);
+            setLastName(data.last_name);
+            setLocation(data.location !== null ? data.location : '');
+            setPhone(data.phone);
+            setUsername(data.username);
+        }
+    }, [data]);
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -77,7 +100,21 @@ function EditProfile() {
         fetchBackend
             .post('/accounts/profile/edit/', dataToSend)
             .then((response) => {
-                navigate('/');
+                console.log(`Successfully edited profile`);
+                if (avatarReq === undefined) {
+                    navigate('/');
+                }
+                const formDataImage = new FormData();
+                formDataImage.append('avatar_img', avatarReq);
+                fetchBackendImg
+                    .post('/accounts/profile/edit-avatar/', formDataImage)
+                    .then((res) => {
+                        console.log('Successfully edited avatar image');
+                        navigate('/');
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
             })
             .catch((err) => {
                 if (err.response.data && err.response.data['username']) {
@@ -92,6 +129,12 @@ function EditProfile() {
                 }
                 // navigate('/accounts/edit-profile');
             });
+    };
+
+    const handleAvatarChange = (event) => {
+        const files = Array.from(event.target.files);
+        setAvatarReq(files[0]);
+        encodeImage(event, setAvatar);
     };
 
     return (
@@ -186,11 +229,26 @@ function EditProfile() {
                                     <Typography variant="h6" sx={{ mb: 1 }}>
                                         Profile Picture
                                     </Typography>
-                                    <Avatar
-                                        sx={{ width: 200, height: 200, justifySelf: 'center' }}
-                                        alt="Name"
-                                        src="/static/images/avatar/2.jpg"
+                                    <input
+                                        accept="image/*"
+                                        id="avatar-img"
+                                        type="file"
+                                        hidden
+                                        onChange={handleAvatarChange}
                                     />
+                                    <label htmlFor="avatar-img">
+                                        <IconButton component="span">
+                                            <Avatar
+                                                sx={{
+                                                    width: 200,
+                                                    height: 200,
+                                                    justifySelf: 'center'
+                                                }}
+                                                alt="Profile Picture"
+                                                src={avatar}
+                                            />
+                                        </IconButton>
+                                    </label>
                                 </Box>
                             </Grid>
                             <Grid item xs={6}>
@@ -306,6 +364,7 @@ function EditProfile() {
                                                 onChange={(event) => {
                                                     setTerms(event.target.checked);
                                                 }}
+                                                required
                                             />
                                         }
                                         label="I agree with the terms and conditions."
