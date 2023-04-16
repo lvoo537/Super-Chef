@@ -140,6 +140,7 @@ class UnLikeRecipeView(APIView):
         else:
             return Response({'message': 'Recipe not liked'}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class MyRecipeView(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
 
@@ -164,7 +165,6 @@ class MyRecipeView(APIView):
         if recipes_created_serializer.data:
             my_recipes['interacted'].extend(recipes_created_serializer.data)
 
-
         lst = []
         for something in my_recipes['interacted']:
             lst.append(something['id'])
@@ -188,7 +188,6 @@ class MyRecipeView(APIView):
                     my_recipes['interacted'].append(data)
                     lst.append(data['id'])
 
-
         # commented
         user_comments = Comment.objects.filter(user=request.user)
         recipes_commented_on_by_user = Recipe.objects.filter(comments__in=user_comments)
@@ -196,12 +195,12 @@ class MyRecipeView(APIView):
 
         if recipes_commented_serializer.data:
             for data in recipes_commented_serializer.data:
-                 if data['id'] not in lst:
-                     my_recipes['interacted'].append(data)
-                     lst.append(data['id'])
-
+                if data['id'] not in lst:
+                    my_recipes['interacted'].append(data)
+                    lst.append(data['id'])
 
         return Response({'my_recipes': my_recipes}, status=status.HTTP_200_OK)
+
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 5
@@ -209,11 +208,9 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
-
 class PopularRecipeView(ListAPIView):
     serializer_class = RateRecipeSerializer
     pagination_class = StandardResultsSetPagination
-
 
     def get_queryset(self):
         favourited = self.request.GET.get('favorites', '').lower() == 'true'
@@ -268,7 +265,8 @@ class CommentFileUploadView(APIView):
                 for file in file_list:
                     name = file.name
                     if not file.name.endswith(('.jpg', '.png', '.mp4')):
-                        return Response({'message': 'File must be an image or video'}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({'message': 'File must be an image or video'},
+                                        status=status.HTTP_400_BAD_REQUEST)
 
                     # print(5)
                     recipe_file = CommentFile.objects.create(name=name, comment=comment, file=file)
@@ -278,9 +276,6 @@ class CommentFileUploadView(APIView):
         # Return response
         response_data = {'Success message': 'Uploaded the files successfully.'}
         return Response(response_data, status=status.HTTP_201_CREATED)
-
-
-
 
         #
         # files = request.FILES.getlist('file')
@@ -309,3 +304,26 @@ class RetrieveRating(APIView):
         except Rating.DoesNotExist:
             return Response({'error': 'You have not rated this recipe.'}, status=404)
 
+
+class IsLikedView(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
+    def get(self, request, recipe_id):
+
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        if recipe in request.user.liked_recipes.all():
+            return Response({'message': True}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': False}, status=status.HTTP_200_OK)
+
+
+class IsFavioritedView(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
+    def get(self, request, recipe_id):
+        # recipe_id = self.kwargs.get('recipe_id')
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        if recipe in request.user.favourite_recipes.all():
+            return Response({'message': True}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': False}, status=status.HTTP_200_OK)
