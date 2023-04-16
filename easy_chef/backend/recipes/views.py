@@ -670,10 +670,10 @@ class ShoppingLists(APIView):
         for recipe in recipes:
             ingredients = Ingredient.objects.filter(recipes=recipe)
             for ingredient in ingredients:
-                if ingredient.name in ingredient_dict:
-                    ingredient_dict[ingredient.name]['amount'] += ingredient.quantity
+                if ingredient.name.lower() in ingredient_dict:
+                    ingredient_dict[ingredient.name.lower()]['amount'] += ingredient.quantity
                 else:
-                    ingredient_dict[ingredient.name] = {'id': ingredient.id,
+                    ingredient_dict[ingredient.name.lower()] = {'id': ingredient.id,
                                                         'name': ingredient.name,
                                                         'amount': ingredient.quantity,
                                                         'unit_of_measure': ingredient.unit_of_measure}

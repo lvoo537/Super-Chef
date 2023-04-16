@@ -11,6 +11,7 @@ import Navbar from '../../components/Navbar/Navbar';
 
 import CartIngredientTable from '../../components/CartIngredientTable/CartIngredientTable';
 import CartRecipeTable from '../../components/CartRecipeTable/CartRecipeTable';
+import { encodeImagesFromDb } from '../../Utils/encodeImages';
 
 // function createIngredientData(name, unit, servings) {
 //     return { name, unit, servings };
@@ -53,21 +54,40 @@ function ShoppingCart() {
     useEffect(() => {
         fetchBackend
             .get(`/recipes/shopping-list/`)
-            .then((res) => {
-                const formattedRecipes = res.data['recipes'].map((recipe, index) => ({
-                    id: recipe.id,
-                    recipeName: recipe.name,
-                    servings: recipe.servings,
-                    ingredients: recipe.ingredients.map(
-                        (ingredient) =>
-                            ingredient.name +
-                            ' ' +
-                            ingredient.quantity +
-                            ' ' +
-                            ingredient.unit_of_measure
-                    )
-                }));
-                const formattedIngredients = res.data['ingredients'].map((ingredient, index) => ({
+            .then(async (res) => {
+                const formattedRecipesPromises = res.data['recipes'].map(async (recipe) => {
+                    const recipeFormatted = {
+                        id: recipe.id,
+                        recipeName: recipe.name,
+                        servings: recipe.servings,
+                        ingredients: recipe.ingredients.map(
+                            (ingredient) =>
+                                ingredient.name +
+                                ' ' +
+                                ingredient.quantity +
+                                ' ' +
+                                ingredient.unit_of_measure
+                        ),
+                        image: ''
+                    };
+                    try {
+                        const imageResponse = await fetchBackend.get(
+                            `/recipes/${recipe.id}/retrieve-recipe-files`
+                        );
+                        if (imageResponse.data.files.length !== 0) {
+                            console.log(`Successfully retrieved recipe image for ${recipe.id}`);
+                            recipeFormatted.image = await encodeImagesFromDb(
+                                imageResponse.data.files
+                            );
+                        }
+                    } catch (error) {
+                        console.log(error);
+                    }
+                    return recipeFormatted;
+                });
+
+                const formattedRecipes = await Promise.all(formattedRecipesPromises);
+                const formattedIngredients = res.data['ingredients'].map((ingredient) => ({
                     id: ingredient.id,
                     name: ingredient.name,
                     quantity: ingredient.amount,

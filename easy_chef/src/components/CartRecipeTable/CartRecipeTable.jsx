@@ -11,6 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import ClickableChip from './ClickableChip/ClickableChip';
 import fetchBackend from '../../Utils/fetchBackend';
+import Avatar from '@mui/material/Avatar';
 
 function CartRecipeTable(props) {
     // const handleServingsChange = (id, newServings) => {
@@ -63,7 +64,21 @@ function CartRecipeTable(props) {
             field: 'image',
             width: 150,
             headerName: 'Images',
-            editable: false
+            editable: false,
+            renderCell: (params) => {
+                return (
+                    <Avatar
+                        sx={{
+                            width: 100,
+                            height: 100,
+                            justifySelf: 'center',
+                            alignSelf: 'center'
+                        }}
+                        alt="recipe_img"
+                        src={params.row.image.toString()}
+                    />
+                );
+            }
         },
         {
             field: 'recipeName',
