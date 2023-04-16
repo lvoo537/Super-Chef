@@ -199,3 +199,25 @@ class EditAvatar(APIView):
 
         # Return a response indicating success
         return Response({"message": "Avatar updated successfully."})
+
+
+class GetUserInfo(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
+    def get(self, request):
+        errors = {}
+        # get the user from the token
+        un = request.user
+
+        if un is None:
+            errors['user'] = 'This user does not exist'
+            return Response(errors, status=400)
+
+        try:
+            user = MyUser.objects.get(username=un)
+        except MyUser.DoesNotExist:
+            errors["user_id"] = "This user does not exist"
+            return Response(errors, status=400)
+
+        user_serializer = MyUserSerializer(user)
+        return Response(user_serializer.data)

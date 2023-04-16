@@ -1,4 +1,12 @@
-import { CircularProgress, Grid, Rating, TextareaAutosize, Typography } from '@mui/material';
+import {
+    CircularProgress,
+    Grid,
+    Rating,
+    Stack,
+    Switch,
+    TextareaAutosize,
+    Typography
+} from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -14,13 +22,14 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import encodeImages, { encodeImagesFromDb } from '../../Utils/encodeImages';
+import Avatar from '@mui/material/Avatar';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 function RecipeDetailsPage() {
     const { recipeId } = useParams();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [data, setData] = useState([]);
     const [imageName, setImageName] = useState('');
-    const [recipeImages, setRecipeImages] = useState([]);
     const [imagesEncoded, setImagesEncoded] = useState([]);
     const [instructionimagesEncoded, setinstructionImagesEncoded] = useState([]);
     const [ericimagesEncoded, setericImagesEncoded] = useState([]);
@@ -32,6 +41,19 @@ function RecipeDetailsPage() {
     const [servings, setServings] = useState(0);
     const [instructions, setInstructions] = useState([]);
     const [instrImagesLoaded, setInstrImagesLoaded] = useState(false);
+    const [commentImagesLoaded, setCommentImagesLoaded] = useState(false);
+    const [comments, setComments] = useState([]);
+    const [postCommentImages, setPostCommentImages] = useState([]);
+    const [postCommentValue, setPostCommentValue] = useState('');
+    const [formError, setFormError] = useState({
+        errorOccurred: false,
+        errorMsg: ''
+    });
+    const [checked, setChecked] = React.useState(true);
+
+    const handleChange = (event) => {
+        setChecked(event.target.checked);
+    };
     // Handle login form submission
     // const handleLogin = async (event = undefined) => {
     //     if (event) {
@@ -110,7 +132,26 @@ function RecipeDetailsPage() {
                 //             console.log(err);
                 //         });
                 // }
-                setInstructions(data.instructions);
+                const commentsResponse = data.comments;
+                if (commentsResponse.length === 0) setCommentImagesLoaded(true);
+                await Promise.all(
+                    commentsResponse.map(async (comment) => {
+                        try {
+                            const res = await fetchBackend.get(
+                                `/recipes/${comment.id}/retrieve-comment-files`
+                            );
+                            if (res.data.files && res.data.files.length !== 0) {
+                                console.log(`Successfully retrieved images for ${comment.id}`);
+                            }
+                            const encodedImages = await encodeImagesFromDb(res.data.files);
+                            comment.commentImagesEncoded = encodedImages;
+                        } catch (err) {
+                            console.log(err);
+                        }
+                    })
+                );
+                setComments(commentsResponse);
+                setCommentImagesLoaded(true);
             }
         } catch (error) {
             console.error('Failed to fetch data');
@@ -238,8 +279,85 @@ function RecipeDetailsPage() {
 
     const handleImages = (event) => {
         const files = Array.from(event.target.files);
-        setRecipeImages(files);
+        setPostCommentImages(files);
         encodeImages(event, setImageName, setericImagesEncoded);
+    };
+
+    const handleAddToCart = (event) => {
+        event.preventDefault();
+        fetchBackend
+            .post(`/recipes/${recipeId}/add-to-cart/`)
+            .then((response) => {
+                // handle the response from the server here
+                if (response.ok) {
+                    // success - item was added to the cart
+                    console.log('Item added to cart!');
+                } else {
+                    // error - something went wrong
+                    console.error('Error adding item to cart:', response.statusText);
+                }
+            })
+            .catch((error) => {
+                console.error('Error adding item to cart:', error);
+            });
+    };
+
+    const handlelike = (event) => {
+        event.preventDefault();
+        fetchBackend
+            .post(`/social-media/${recipeId}/like-recipe/`)
+            .then((response) => {
+                // handle the response from the server here
+                if (response.ok) {
+                    // success - item was added to the cart
+                    console.log('Item was liked!');
+                } else {
+                    // error - something went wrong
+                    console.error('Error, adding liking recipe:', response.statusText);
+                }
+            })
+            .catch((error) => {
+                console.error('Error2, liking recipe:', error);
+            });
+    };
+
+    const handlePostSubmission = (event) => {
+        event.preventDefault();
+
+        const formDataImages = new FormData();
+        for (let i = 0; i < postCommentImages.length; i++) {
+            const image = postCommentImages[i];
+            formDataImages.append('file' + i, image);
+        }
+        fetchBackend
+            .post(`/social-media/${recipeId}/comment-on-recipe/`, { comment: postCommentValue })
+            .then((res) => {
+                console.log(`Successfully commented on recipe ${recipeId}`);
+                const commentId = res.data.comment_id;
+                fetchBackendImg
+                    .post(
+                        `/social-media/comment-on-recipes/attach-files/${commentId}/`,
+                        formDataImages
+                    )
+                    .then((res) => {
+                        console.log(`Successfully attached files onto comment, ${commentId}`);
+                        setComments((prevState) => [...prevState, postCommentValue]);
+                        setPostCommentValue('');
+                        setPostCommentImages([]);
+                        setericImagesEncoded([]);
+                        handleGetData();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            })
+            .catch((err) => {
+                console.log(err);
+                setFormError({
+                    errorOccurred: true,
+                    errorMsg: 'Either comment is required or comment must be <= 200 characters'
+                });
+            });
     };
 
     useEffect(() => {
@@ -287,6 +405,13 @@ function RecipeDetailsPage() {
             <Typography variant="h3" style={{ textAlign: 'center', paddingTop: '10px' }}>
                 {data.name}
             </Typography>
+            {formError.errorOccurred ? (
+                <Typography variant="h5" style={{ color: 'red' }}>
+                    {formError.errorMsg}
+                </Typography>
+            ) : (
+                <div></div>
+            )}
             <Typography
                 variant="h5"
                 style={{ textAlign: 'left', paddingTop: '10px', paddingLeft: '2%' }}
@@ -350,7 +475,12 @@ function RecipeDetailsPage() {
                         <Typography variant="h5">Servings: {servings}</Typography>
                     </div>
                     <div className="button-container">
-                        <Button variant="contained" type="submit" color="success">
+                        <Button
+                            variant="contained"
+                            type="submit"
+                            color="success"
+                            onClick={handleAddToCart}
+                        >
                             Add to Cart
                         </Button>
 
@@ -360,9 +490,28 @@ function RecipeDetailsPage() {
                     </div>
 
                     <div className="button-container">
-                        <Button variant="contained" type="submit" color="primary">
-                            Like
-                        </Button>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    size="medium"
+                                    checked={checked}
+                                    onChange={handleChange}
+                                    inputProps={{ 'aria-label': 'controlled' }}
+                                />
+                            }
+                            label={
+                                <Typography
+                                    variant="body1"
+                                    sx={{
+                                        fontSize: '1.25rem', // increase the font size
+                                        // fontWeight: 'bold', // add bold weight
+                                        textTransform: 'uppercase' // change the text case to uppercase
+                                    }}
+                                >
+                                    Like/Unlike
+                                </Typography>
+                            }
+                        />
 
                         <Button variant="contained" type="submit" color="warning">
                             Import Recipe
@@ -408,7 +557,7 @@ function RecipeDetailsPage() {
                                     </div>
                                 )}
                                 <Typography>
-                                    Instructions:
+                                    Instruction Details:
                                     <br />
                                     {instruction.instruction}
                                 </Typography>
@@ -426,15 +575,22 @@ function RecipeDetailsPage() {
                         minRows={10}
                         placeholder="Comment Right here"
                         style={{ width: '35%' }}
+                        value={postCommentValue}
+                        onChange={(e) => setPostCommentValue(e.target.value)}
                     />
                 </div>
                 <div className="comment-buttons">
-                    <Button variant="contained" type="submit" color="primary">
+                    <Button
+                        variant="contained"
+                        type="submit"
+                        color="primary"
+                        onClick={handlePostSubmission}
+                    >
                         Post Comment!
                     </Button>
 
                     <Button variant="contained" component="label">
-                        Upload Recipe Images
+                        Upload Comment Images
                         <input
                             type="file"
                             accept="image/"
@@ -451,6 +607,30 @@ function RecipeDetailsPage() {
                         <Carousell images={ericimagesEncoded} width={650} height={300} />
                     </Grid>
                 )}
+                <br />
+                <div className="user-comments">
+                    <Stack spacing={2}>
+                        {comments.map((comment, index) => (
+                            <div className="comment-item">
+                                <div className="comment-user-image">
+                                    <Avatar
+                                        sx={{ width: 20, height: 20 }}
+                                        src="/broken-image.jpg"
+                                    />
+                                </div>
+                                <div className="individual-comment">
+                                    {comment.commentImagesEncoded === undefined ||
+                                    comment.commentImagesEncoded.length === 0 ? (
+                                        <div></div>
+                                    ) : (
+                                        <Carousell images={comment.commentImagesEncoded} />
+                                    )}
+                                    <Typography variant="h5">{comment.comment}</Typography>
+                                </div>
+                            </div>
+                        ))}
+                    </Stack>
+                </div>
             </div>
         </>
     );

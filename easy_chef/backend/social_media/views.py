@@ -245,8 +245,9 @@ class CommentRecipeView(APIView):
         if len(comment) > 200:
             return Response({'message': 'Comment must be less than 200 characters'}, status=status.HTTP_400_BAD_REQUEST)
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        Comment.objects.create(user=user, recipe=recipe, comment=comment)
-        return Response({'message': 'Comment created successfully'}, status=status.HTTP_200_OK)
+        comment_obj=Comment.objects.create(user=user, recipe=recipe, comment=comment)
+        comment_id = comment_obj.pk
+        return Response({'comment_id':comment_id,'message': 'Comment created successfully'}, status=status.HTTP_200_OK)
 
 
 class CommentFileUploadView(APIView):
@@ -269,8 +270,8 @@ class CommentFileUploadView(APIView):
                 file_list = file_dict.getlist(file_key)
                 for file in file_list:
                     name = file.name
-                    if not file.name.endswith(('.jpg', '.png', '.mp4')):
-                        return Response({'message': 'File must be an image or video'}, status=status.HTTP_400_BAD_REQUEST)
+                    # if not file.name.endswith(('.jpg', '.png', '.mp4')):
+                    #     return Response({'message': 'File must be an image or video'}, status=status.HTTP_400_BAD_REQUEST)
 
                     # print(5)
                     recipe_file = CommentFile.objects.create(name=name, comment=comment, file=file)
