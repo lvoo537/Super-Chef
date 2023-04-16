@@ -10,7 +10,7 @@ import {
 import Navbar from '../../components/Navbar/Navbar';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import fetchBackend from '../../Utils/fetchBackend';
+import fetchBackend, { fetchBackendImg } from '../../Utils/fetchBackend';
 import Carousel from '../../components/Carousel/Carousel';
 import Carousell from './recipeDetailescarousel';
 import './recipedetails.css';
@@ -384,7 +384,7 @@ function RecipeDetailsPage() {
         var totalTimeInMinutes = parseInt(hours) * 60 + parseInt(minutes);
     }
 
-    if (!instrImagesLoaded) {
+    if (!instrImagesLoaded && !commentImagesLoaded) {
         return (
             <Grid container spacing={2} sx={{ textAlign: 'center' }}>
                 <Grid item xs={12}>
