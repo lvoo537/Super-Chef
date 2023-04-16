@@ -49,11 +49,66 @@ function RecipeDetailsPage() {
         errorOccurred: false,
         errorMsg: ''
     });
-    const [checked, setChecked] = React.useState(true);
+    const [checked, setChecked] = React.useState(undefined);
+    const [checkedfavourite, setCheckedfavourite] = React.useState(undefined);
 
+    const handleChangefavourite = (event) => {
+        setCheckedfavourite(event.target.checked);
+    };
     const handleChange = (event) => {
         setChecked(event.target.checked);
     };
+    useEffect(() => {
+        if (checked === true) {
+            handlelike();
+        } else {
+            handleUnlike();
+        }
+    }, [checked]);
+
+    useEffect(() => {
+        if (checkedfavourite === true) {
+            handleFavourite();
+        } else {
+            handleUnFavourite();
+        }
+    }, [checkedfavourite]);
+
+    const handleFavourite = () => {
+        fetchBackend
+            .post(`/social-media/${recipeId}/favorite-recipe/`)
+            .then((response) => {
+                // handle the response from the server here
+                if (response.ok) {
+                    // success - item was added to the cart
+                    console.log('Item was favorited!');
+                } else {
+                    // error - something went wrong
+                    console.error('Error, favoriting recipe:', response.statusText);
+                }
+            })
+            .catch((error) => {
+                console.error('Error2, favoriting recipe:', error);
+            });
+    };
+    const handleUnFavourite = () => {
+        fetchBackend
+            .delete(`/social-media/${recipeId}/unfavorite-recipe/`)
+            .then((response) => {
+                // handle the response from the server here
+                if (response.ok) {
+                    // success - item was added to the cart
+                    console.log('Item was Unfavorited!');
+                } else {
+                    // error - something went wrong
+                    console.error('Error, Unfavoriting recipe:', response.statusText);
+                }
+            })
+            .catch((error) => {
+                console.error('Error2, Unfavoriting recipe:', error);
+            });
+    };
+
     // Handle login form submission
     // const handleLogin = async (event = undefined) => {
     //     if (event) {
@@ -152,6 +207,25 @@ function RecipeDetailsPage() {
                 );
                 setComments(commentsResponse);
                 setCommentImagesLoaded(true);
+
+                fetchBackend
+                    .get(`/social-media/${recipeId}/isliked/`)
+                    .then((response) => {
+                        // handle the response from the server here
+                        setChecked(response.data.message);
+                    })
+                    .catch((error) => {
+                        console.error('Error2dvfvd :', error);
+                    });
+                fetchBackend
+                    .get(`/social-media/${recipeId}/isfavourited/`)
+                    .then((response) => {
+                        // handle the response from the server here
+                        setCheckedfavourite(response.data.message);
+                    })
+                    .catch((error) => {
+                        console.error('Error2dvfvd :', error);
+                    });
             }
         } catch (error) {
             console.error('Failed to fetch data');
@@ -302,10 +376,27 @@ function RecipeDetailsPage() {
             });
     };
 
-    const handlelike = (event) => {
-        event.preventDefault();
+    const handlelike = () => {
         fetchBackend
             .post(`/social-media/${recipeId}/like-recipe/`)
+            .then((response) => {
+                // handle the response from the server here
+                if (response.ok) {
+                    // success - item was added to the cart
+                    console.log('Item was liked!');
+                } else {
+                    // error - something went wrong
+                    console.error('Error, adding liking recipe:', response.statusText);
+                }
+            })
+            .catch((error) => {
+                console.error('Error2, liking recipe:', error);
+            });
+    };
+
+    const handleUnlike = () => {
+        fetchBackend
+            .delete(`/social-media/${recipeId}/unlike-recipe/`)
             .then((response) => {
                 // handle the response from the server here
                 if (response.ok) {
@@ -484,9 +575,28 @@ function RecipeDetailsPage() {
                             Add to Cart
                         </Button>
 
-                        <Button variant="contained" type="submit" color="error">
-                            Add to Favourite
-                        </Button>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    size="medium"
+                                    checked={checkedfavourite}
+                                    onChange={handleChangefavourite}
+                                    inputProps={{ 'aria-label': 'controlled' }}
+                                />
+                            }
+                            label={
+                                <Typography
+                                    variant="body1"
+                                    sx={{
+                                        fontSize: '1.25rem', // increase the font size
+                                        // fontWeight: 'bold', // add bold weight
+                                        textTransform: 'uppercase' // change the text case to uppercase
+                                    }}
+                                >
+                                    Favourite/UnFavourite
+                                </Typography>
+                            }
+                        />
                     </div>
 
                     <div className="button-container">
@@ -513,9 +623,9 @@ function RecipeDetailsPage() {
                             }
                         />
 
-                        <Button variant="contained" type="submit" color="warning">
-                            Import Recipe
-                        </Button>
+                        {/*<Button variant="contained" type="submit" color="warning">*/}
+                        {/*    Import Recipe*/}
+                        {/*</Button>*/}
                     </div>
                 </div>
             </div>

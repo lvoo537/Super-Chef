@@ -12,5 +12,7 @@ urlpatterns = [
     path('popular-recipes/', PopularRecipeView.as_view(), name='popular_recipe'),
     path('<int:recipe_id>/comment-on-recipe/', CommentRecipeView.as_view(), name='comment_on_recipe'),
     path('comment-on-recipes/attach-files/<int:comment_id>/', CommentFileUploadView.as_view(), name='comment_recipe_files'),
+    path('<int:recipe_id>/isliked/', IsLikedView.as_view(), name='isLiked'),
+    path('<int:recipe_id>/isfavourited/', IsFavioritedView.as_view(), name='isFavourited'),
     # path('popular-recipes/', TrendingRecipeView.as_view(), name='trending_recipe'),
 ]

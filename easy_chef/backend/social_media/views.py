@@ -312,3 +312,26 @@ class RetrieveRating(APIView):
         except Rating.DoesNotExist:
             return Response({'error': 'You have not rated this recipe.'}, status=404)
 
+
+class IsLikedView(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
+    def get(self, request, recipe_id):
+
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        if recipe in request.user.liked_recipes.all():
+            return Response({'message': True}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': False}, status=status.HTTP_200_OK)
+
+
+class IsFavioritedView(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
+    def get(self, request, recipe_id):
+        # recipe_id = self.kwargs.get('recipe_id')
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        if recipe in request.user.favourite_recipes.all():
+            return Response({'message': True}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': False}, status=status.HTTP_200_OK)
