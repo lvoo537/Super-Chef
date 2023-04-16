@@ -1,0 +1,109 @@
+html, body {
+    background-color: #E3F0FF;
+}
+
+.image-grid{
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+}
+
+.image{
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 2%;
+}
+
+.stats{
+    display: grid;
+    /*justify-self: end;*/
+    /*justify-items: start;*/
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+    gap: 1%;
+    align-items: center;
+}
+
+.likes{
+    width: 100%;
+    background-color: white;
+    /*height: 100%;*/
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 1%;
+}
+
+.rating{
+    width: 100%;
+    background-color: white;
+    /*height: 100%;*/
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 1%;
+
+}
+
+.my-rating{
+    width: 100%;
+    background-color: white;
+    /*height: 100%;*/
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 1%;
+}
+
+.base-recipe{
+    width: 100%;
+    background-color: white;
+    /*height: 100%;*/
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 1%;
+}
+
+.servings{
+    width: 100%;
+    background-color: white;
+    /*height: 100%;*/
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 1%;
+}
+
+.button-container{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    grid-column-gap: 5%;
+    grid-row-gap: 10%;
+    padding-top: 2%;
+}
+
+.instructions{
+    /*display: grid;*/
+    width: 50%;
+    margin: 0 auto;
+}
+
+.instruction{
+    padding-top: 3%;
+}
+
+.sum {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    /*padding-left: 10%;*/
+}
+
+.comments{
+    padding-left: 2%;
+}
+
+.text-area{
+    padding-top: 1%;
+}
+
+.comment-buttons{
+    padding-top: 1%;
+}
+

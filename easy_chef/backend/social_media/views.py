@@ -8,8 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.views import IsTokenValid
 from recipes.models import Rating, Recipe, Comment, CommentFile
-from social_media.serializers import RecipeSerializer
+from social_media.serializers import RecipeRatingSerializer, RecipeSerializer, RateRecipeSerializer
 
 from rest_framework.parsers import MultiPartParser
 
@@ -21,7 +22,7 @@ from rest_framework.parsers import MultiPartParser
 
 # Create your views here.
 class RateRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     # serializer_class = RateRecipeSerializer
 
@@ -79,7 +80,7 @@ class RateRecipeView(APIView):
 
 
 class FavoriteRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request, *args, **kwargs):
         recipe_id = self.kwargs.get('recipe_id')
@@ -95,7 +96,7 @@ class FavoriteRecipeView(APIView):
 
 
 class LikeRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request, *args, **kwargs):
         recipe_id = self.kwargs.get('recipe_id')
@@ -110,7 +111,7 @@ class LikeRecipeView(APIView):
 
 
 class UnFavoriteRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def delete(self, request, *args, **kwargs):
         recipe_id = self.kwargs.get('recipe_id')
@@ -126,7 +127,7 @@ class UnFavoriteRecipeView(APIView):
 
 
 class UnLikeRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def delete(self, request, *args, **kwargs):
         recipe_id = self.kwargs.get('recipe_id')
@@ -141,7 +142,7 @@ class UnLikeRecipeView(APIView):
 
 
 class MyRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def get(self, request, *args, **kwargs):
         my_recipes = {
@@ -162,15 +163,20 @@ class MyRecipeView(APIView):
         # interacted recipes
         # Created
         if recipes_created_serializer.data:
-            my_recipes['interacted'].append(recipes_created_serializer.data)
+            my_recipes['interacted'].extend(recipes_created_serializer.data)
+
+        lst = []
+        for something in my_recipes['interacted']:
+            lst.append(something['id'])
 
         # liked
         recipes_liked = request.user.liked_recipes.all()
         recipes_liked_serializer = RecipeSerializer(recipes_liked, many=True)
         if recipes_liked_serializer.data:
             for data in recipes_liked_serializer.data:
-                if data not in my_recipes['interacted']:
+                if data['id'] not in lst:
                     my_recipes['interacted'].append(data)
+                    lst.append(data['id'])
 
         # rated
         user_ratings = Rating.objects.filter(user=request.user)
@@ -178,8 +184,9 @@ class MyRecipeView(APIView):
         recipes_rated_serializer = RecipeSerializer(recipes_rated_by_user, many=True)
         if recipes_rated_serializer.data:
             for data in recipes_rated_serializer.data:
-                if data not in my_recipes['interacted']:
+                if data['id'] not in lst:
                     my_recipes['interacted'].append(data)
+                    lst.append(data['id'])
 
         # commented
         user_comments = Comment.objects.filter(user=request.user)
@@ -188,8 +195,9 @@ class MyRecipeView(APIView):
 
         if recipes_commented_serializer.data:
             for data in recipes_commented_serializer.data:
-                if data not in my_recipes['interacted']:
+                if data['id'] not in lst:
                     my_recipes['interacted'].append(data)
+                    lst.append(data['id'])
 
         return Response({'my_recipes': my_recipes}, status=status.HTTP_200_OK)
 
@@ -201,9 +209,8 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 class PopularRecipeView(ListAPIView):
-    serializer_class = RecipeSerializer
+    serializer_class = RateRecipeSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         favourited = self.request.GET.get('favorites', '').lower() == 'true'
@@ -221,7 +228,7 @@ class PopularRecipeView(ListAPIView):
 
 
 class CommentRecipeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request, *args, **kwargs):
         recipe_id = self.kwargs.get('recipe_id')
@@ -238,7 +245,7 @@ class CommentRecipeView(APIView):
 
 
 class CommentFileUploadView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
     parser_classes = [MultiPartParser]
 
     def post(self, request, *args, **kwargs):
@@ -251,16 +258,15 @@ class CommentFileUploadView(APIView):
             return Response({'comment_id': 'Comment does not exist.'}, status=404)
 
         files = request.FILES
-        print(request)
         if files:
-            print(request)
             file_dict = MultiValueDict(files)
             for file_key in file_dict.keys():
                 file_list = file_dict.getlist(file_key)
                 for file in file_list:
                     name = file.name
                     if not file.name.endswith(('.jpg', '.png', '.mp4')):
-                        return Response({'message': 'File must be an image or video'}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({'message': 'File must be an image or video'},
+                                        status=status.HTTP_400_BAD_REQUEST)
 
                     # print(5)
                     recipe_file = CommentFile.objects.create(name=name, comment=comment, file=file)
@@ -270,9 +276,6 @@ class CommentFileUploadView(APIView):
         # Return response
         response_data = {'Success message': 'Uploaded the files successfully.'}
         return Response(response_data, status=status.HTTP_201_CREATED)
-
-
-
 
         #
         # files = request.FILES.getlist('file')
@@ -288,3 +291,39 @@ class CommentFileUploadView(APIView):
         #
         # # Return response
 
+
+class RetrieveRating(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, recipe_id):
+        # Get the rating for the requested recipe from the authenticated user
+        try:
+            rating = Rating.objects.get(recipe_id=recipe_id, user=request.user)
+            serializer = RecipeRatingSerializer(rating)
+            return Response(serializer.data)
+        except Rating.DoesNotExist:
+            return Response({'error': 'You have not rated this recipe.'}, status=404)
+
+
+class IsLikedView(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
+    def get(self, request, recipe_id):
+
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        if recipe in request.user.liked_recipes.all():
+            return Response({'message': True}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': False}, status=status.HTTP_200_OK)
+
+
+class IsFavioritedView(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
+    def get(self, request, recipe_id):
+        # recipe_id = self.kwargs.get('recipe_id')
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        if recipe in request.user.favourite_recipes.all():
+            return Response({'message': True}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': False}, status=status.HTTP_200_OK)

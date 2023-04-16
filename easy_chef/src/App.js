@@ -14,47 +14,46 @@ import EditRecipe from './pages/EditRecipe/EditRecipe';
 import RecipeDetailsPage from './pages/RecipeDetailsPage/RecipeDetailsPage';
 import ShoppingCart from './pages/ShoppingCart/ShoppingCart';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
+import { AuthProvider } from './contexts/Auth/AuthContext';
+import PrivateRoute from './components/PrivateRoute/PrivateRoute';
+import SearchResultsPage from './pages/SearchResultsPage/SearchResultsPage';
+import { SearchQueryResponseProvider } from './contexts/SearchQueryResponseContext/SearchQueryResponseContext';
+import { RecipeProvider } from './contexts/RecipeContext/RecipeContext';
 
 function App() {
-    function HomePageComponent() {
-        return (
-            <div className="App">
-                <header className="App-header">
-                    <img src={logo} className="App-logo" alt="logo" />
-                    <p>
-                        Edit <code>src/App.js</code> and save to reload.
-                    </p>
-
-                    <a
-                        className="App-link"
-                        href="https://reactjs.org"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Learn React
-                    </a>
-                </header>
-                <ExampleComponent text="This is an example component in Div" />
-            </div>
-        );
-    }
-
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<MainPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/accounts/view-profile" element={<ViewProfile />} />
-                <Route path="/accounts/edit-profile" element={<EditProfile />} />
-                <Route path="/accounts/logout" element={<LogoutPage />} />
-                <Route path="/accounts/my-recipe" element={<MyRecipes />} />
-                <Route path="/recipes/create-recipe" element={<CreateRecipe />} />
-                <Route path="/recipes/edit-recipe/:recipeId" element={<EditRecipe />} />
-                <Route path="/recipes/recipe-details/:recipeId" element={<RecipeDetailsPage />} />
-                <Route path="/shopping-cart" element={<ShoppingCart />} />
-            </Routes>
-        </BrowserRouter>
+        <AuthProvider>
+            <SearchQueryResponseProvider>
+                <RecipeProvider>
+                    <BrowserRouter>
+                        <Routes>
+                            <Route path="/" element={<MainPage />} />
+                            <Route path="/login" element={<LoginPage />} />
+                            <Route path="/register" element={<RegisterPage />} />
+                            <Route path="/accounts/*" element={<PrivateRoute />}>
+                                <Route path="view-profile" element={<ViewProfile />} />
+                                <Route path="edit-profile" element={<EditProfile />} />
+                                <Route path="logout" element={<LogoutPage />} />
+                                <Route path="my-recipe" element={<MyRecipes />} />
+                                <Route path="shopping-cart" element={<ShoppingCart />} />
+                            </Route>
+                            <Route path="/recipes/*" element={<PrivateRoute />}>
+                                <Route path="create-recipe" element={<CreateRecipe />} />
+                                <Route path="edit-recipe/:recipeIdPath" element={<EditRecipe />} />
+                            </Route>
+                            <Route
+                                path="/recipes/recipe-details/:recipeId"
+                                element={<RecipeDetailsPage />}
+                            />
+                            <Route
+                                path="/search-results/:searchQuery"
+                                element={<SearchResultsPage />}
+                            />
+                        </Routes>
+                    </BrowserRouter>
+                </RecipeProvider>
+            </SearchQueryResponseProvider>
+        </AuthProvider>
     );
 }
 

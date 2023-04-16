@@ -14,5 +14,12 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'owner', 'favourited_by', 'prep_time']
 
 
-class RateRecipeSerializer:
-    pass
+class RateRecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = '__all__'
+
+class RecipeRatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = '__all__'

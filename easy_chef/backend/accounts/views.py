@@ -1,16 +1,32 @@
 from django.core.validators import EmailValidator
 from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.hashers import check_password
-from accounts.models import MyUser
+from accounts.models import MyUser, BlackListedToken,ShoppingList
 from accounts.serializers import MyUserSerializer
 import re
 import datetime
 from PIL import Image
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.db import IntegrityError
+import base64
+
+
+class IsTokenValid(BasePermission):
+    def has_permission(self, request, view):
+        user_id = request.user.id
+        is_allowed_user = True
+        token = request.auth
+        try:
+            is_blackListed = BlackListedToken.objects.get(user=user_id, token=token)
+            if is_blackListed:
+                is_allowed_user = False
+        except BlackListedToken.DoesNotExist:
+            is_allowed_user = True
+        return is_allowed_user
 
 
 class RegisterView(generics.GenericAPIView):
@@ -20,6 +36,8 @@ class RegisterView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             self.perform_create(serializer)
+            user = serializer.instance
+            shopping_list = ShoppingList.objects.create(user=user)
             return Response(serializer.data, status=201)
         else:
             return Response(serializer.errors, status=400)
@@ -37,23 +55,25 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # delete the user's token to log them out
-        request.auth.delete()
-        return Response(status=204)
+        try:
+            token = request.auth
+            user = request.user
+            BlackListedToken.objects.create(token=token, user=user)
+            return Response('Success', status=200)
+        except IntegrityError:
+            return Response('Token already blacklisted', status=400)
+        except:
+            return Response('Error', status=500)
 
 
 class EditProfileView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request):
         errors = {}
         data = request.data
         # get the user from the token
         un = request.user
-
-
-
-
 
         if un is None:
             errors['user'] = 'This user does not exist'
@@ -138,7 +158,7 @@ class EditProfileView(APIView):
 
 
 class EditAvatar(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsTokenValid]
 
     def post(self, request):
 
@@ -180,3 +200,32 @@ class EditAvatar(APIView):
 
         # Return a response indicating success
         return Response({"message": "Avatar updated successfully."})
+
+class GetUserInfo(APIView):
+    permission_classes = [IsAuthenticated, IsTokenValid]
+
+    def get(self, request):
+        errors = {}
+        # get the user from the token
+        un = request.user
+
+        if un is None:
+            errors['user'] = 'This user does not exist'
+            return Response(errors, status=400)
+
+        try:
+            user = MyUser.objects.get(username=un)
+        except MyUser.DoesNotExist:
+            errors["user_id"] = "This user does not exist"
+            return Response(errors, status=400)
+
+        avatar_img = None
+        if user.avatar_img:
+            with open(user.avatar_img.path, 'rb') as f:
+                image_data = f.read()
+                avatar_img = base64.b64encode(image_data).decode('utf-8')
+
+        user_serializer = MyUserSerializer(user)
+        user_data = user_serializer.data
+        user_data['avatar_img'] = avatar_img
+        return Response(user_data)

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Grid from '@mui/material/Unstable_Grid2';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -18,8 +18,13 @@ import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import Navbar from '../../components/Navbar/Navbar';
+import fetchBackend, { fetchBackendImg } from '../../Utils/fetchBackend';
+import { useNavigate } from 'react-router-dom';
+import useSWR from 'swr';
+import { encodeImage, encodeImagesFromDb } from '../../Utils/encodeImages';
 
 function EditProfile() {
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [password, setPassword] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
@@ -31,18 +36,113 @@ function EditProfile() {
     const [location, setLocation] = useState('');
     const [email, setEmail] = useState('');
     const [terms, setTerms] = useState(false);
+    const [username, setUsername] = useState('');
+    const [avatar, setAvatar] = useState(undefined);
+    const [avatarReq, setAvatarReq] = useState(undefined);
+
+    const getProfileUrl = `http://localhost:8000/accounts/get-user-info/`;
+    const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
+    const { data, error } = useSWR(getProfileUrl, fetcher);
+
+    const [formError, setFormError] = useState({
+        errorStatus: false,
+        errorMsg: <div></div>
+    });
+
+    useEffect(() => {
+        if (data) {
+            if (data.avatar_img) {
+                encodeImagesFromDb([data.avatar_img]).then((encodedAvatar) => {
+                    setAvatar(encodedAvatar);
+                });
+            } else {
+                setAvatar('');
+            }
+            setBio(data.bio !== null ? data.bio : '');
+            setDob(data.date_of_birth);
+            setEmail(data.email);
+            setFirstName(data.first_name);
+            setLastName(data.last_name);
+            setLocation(data.location !== null ? data.location : '');
+            setPhone(data.phone);
+            setUsername(data.username);
+        }
+    }, [data]);
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
 
     const handleMouseDownPassword = (event) => {
         event.preventDefault();
     };
+
+    const handleSubmission = (event) => {
+        event.preventDefault();
+
+        if (password.length !== 0 && password !== repeatPassword) {
+            navigate('/accounts/edit-profile');
+            return;
+        }
+
+        const dataToSend = {
+            username,
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            phone_number: phone,
+            date_of_birth: dob,
+            bio,
+            location,
+            old_password: password
+        };
+
+        console.log(dataToSend);
+
+        fetchBackend
+            .post('/accounts/profile/edit/', dataToSend)
+            .then((response) => {
+                console.log(`Successfully edited profile`);
+                if (avatarReq === undefined) {
+                    navigate('/');
+                }
+                const formDataImage = new FormData();
+                formDataImage.append('avatar_img', avatarReq);
+                fetchBackendImg
+                    .post('/accounts/profile/edit-avatar/', formDataImage)
+                    .then((res) => {
+                        console.log('Successfully edited avatar image');
+                        navigate('/');
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            })
+            .catch((err) => {
+                if (err.response.data && err.response.data['username']) {
+                    setFormError({
+                        errorStatus: true,
+                        errorMsg: (
+                            <Typography sx={{ color: 'red' }}>
+                                {err.response.data['username']}
+                            </Typography>
+                        )
+                    });
+                }
+                // navigate('/accounts/edit-profile');
+            });
+    };
+
+    const handleAvatarChange = (event) => {
+        const files = Array.from(event.target.files);
+        setAvatarReq(files[0]);
+        encodeImage(event, setAvatar);
+    };
+
     return (
         <div>
             <Navbar />
             <Grid container spacing={2} paddingX="20%" marginTop={5}>
                 <Grid item xs={12}>
-                    <Box component="form">
+                    <Box component="form" onSubmit={handleSubmission}>
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <TextField
@@ -73,6 +173,16 @@ function EditProfile() {
                                         width: '68%'
                                     }}
                                 >
+                                    <TextField
+                                        id="username"
+                                        label="New Username"
+                                        variant="outlined"
+                                        sx={{ mb: 2 }}
+                                        value={username}
+                                        onChange={(event) => {
+                                            setUsername(event.target.value);
+                                        }}
+                                    />
                                     <TextField
                                         id="date-of-birth"
                                         label="Date of Birth"
@@ -119,11 +229,26 @@ function EditProfile() {
                                     <Typography variant="h6" sx={{ mb: 1 }}>
                                         Profile Picture
                                     </Typography>
-                                    <Avatar
-                                        sx={{ width: 200, height: 200, justifySelf: 'center' }}
-                                        alt="Name"
-                                        src="/static/images/avatar/2.jpg"
+                                    <input
+                                        accept="image/*"
+                                        id="avatar-img"
+                                        type="file"
+                                        hidden
+                                        onChange={handleAvatarChange}
                                     />
+                                    <label htmlFor="avatar-img">
+                                        <IconButton component="span">
+                                            <Avatar
+                                                sx={{
+                                                    width: 200,
+                                                    height: 200,
+                                                    justifySelf: 'center'
+                                                }}
+                                                alt="Profile Picture"
+                                                src={avatar}
+                                            />
+                                        </IconButton>
+                                    </label>
                                 </Box>
                             </Grid>
                             <Grid item xs={6}>
@@ -148,7 +273,7 @@ function EditProfile() {
                                     alignItems="center"
                                 >
                                     <FormControl variant="outlined" sx={{ maxWidth: 250 }}>
-                                        <InputLabel htmlFor="password1">Password</InputLabel>
+                                        <InputLabel htmlFor="password1">New Password</InputLabel>
                                         <OutlinedInput
                                             id="password1"
                                             type={showPassword ? 'text' : 'password'}
@@ -172,7 +297,7 @@ function EditProfile() {
                                             onChange={(event) => {
                                                 setPassword(event.target.value);
                                             }}
-                                            label="Password"
+                                            label="New Password"
                                         />
                                     </FormControl>
                                 </Box>
@@ -239,11 +364,15 @@ function EditProfile() {
                                                 onChange={(event) => {
                                                     setTerms(event.target.checked);
                                                 }}
+                                                required
                                             />
                                         }
                                         label="I agree with the terms and conditions."
                                     />
                                 </FormGroup>
+                            </Grid>
+                            <Grid item xs={12}>
+                                {formError.errorStatus ? formError.errorMsg : <div></div>}
                             </Grid>
                             <Grid item xs={12}>
                                 <Button type="submit" variant="contained">
