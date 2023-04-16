@@ -14,6 +14,5 @@ urlpatterns = [
     path('comment-on-recipes/attach-files/<int:comment_id>/', CommentFileUploadView.as_view(), name='comment_recipe_files'),
     path('<int:recipe_id>/isliked/', IsLikedView.as_view(), name='isLiked'),
     path('<int:recipe_id>/isfavourited/', IsFavioritedView.as_view(), name='isFavourited'),
-
     # path('popular-recipes/', TrendingRecipeView.as_view(), name='trending_recipe'),
 ]

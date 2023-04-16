@@ -104,6 +104,33 @@ html, body {
 }
 
 .comment-buttons{
+    display: grid;
     padding-top: 1%;
+    grid-gap: 10%;
+    grid-template-columns: 1fr 1fr;
+    max-width: 35%
 }
+
+.accordion-times {
+    display: flex;
+    /*justify-content: space-between;*/
+    /*margin: 2px;*/
+    justify-content: center;
+}
+
+.individual-comment{
+    width: 100%;
+    background-color: white;
+    /*height: 100%;*/
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding-bottom: 2%;
+}
+
+.comment-item{
+    display: grid;
+    grid-template-columns: 1fr 13fr;
+    max-width: 35%
+}
+
 

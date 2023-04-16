@@ -539,17 +539,29 @@ class RecipeDetails(APIView):
         return Response(return_data, status=200)
 
 
+# class RetrieveCommentFilesView(APIView):
+#     def get(self, request, comment_id):
+#         comment_files = CommentFile.objects.filter(comment=comment_id)
+#         files = []
+#         for comment_file in comment_files:
+#             file_path = comment_file.file.path
+#             file = open(file_path, 'rb')
+#             files.append(file)
+#
+#         response = FileResponse(files)
+#         return response
 class RetrieveCommentFilesView(APIView):
     def get(self, request, comment_id):
         comment_files = CommentFile.objects.filter(comment=comment_id)
         files = []
         for comment_file in comment_files:
             file_path = comment_file.file.path
-            file = open(file_path, 'rb')
-            files.append(file)
-
-        response = FileResponse(files)
-        return response
+            with open(file_path, 'rb') as file:
+                encoded_file = base64.b64encode(file.read()).decode('utf-8')
+                files.append(encoded_file)
+        # Return a JSON response with the base64-encoded file data
+        data = {"files": files}
+        return JsonResponse(data)
 
 
 class RetrieveRecipeFilesView(APIView):
