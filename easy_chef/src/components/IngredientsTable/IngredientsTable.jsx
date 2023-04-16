@@ -2,7 +2,7 @@ import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Stack } from '@mui/material';
 import Button from '@mui/material/Button';
-import { CreateRecipeIngredientsContext } from '../../contexts/CreateRecipeIngredientsContext/CreateRecipeIngredientsContext';
+import { useCreateIngredientsContext } from '../../contexts/CreateRecipeIngredientsContext/CreateRecipeIngredientsContext';
 
 // For setting ID of row
 let idCounter = 0;
@@ -14,33 +14,21 @@ const createRow = () => {
     idCounter += 1;
     return {
         id: idCounter,
-        ingredientName: '',
+        name: '',
         quantity: 0,
-        unitOfMeasure: measurements[0]
+        unit_of_measure: measurements[0]
     };
 };
 
 // Measurements to be used in select tag.
-const measurements = [
-    'Grams',
-    'Kilograms',
-    'Milliliters',
-    'Liters',
-    'Teaspoon',
-    'Cup',
-    'Ounce',
-    'Pound',
-    'Pinch',
-    'Unit'
-];
-
+const measurements = ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'pinch', 'unit'];
 function IngredientsTable({ width }) {
     // To save ingredient info (from rows) to context
-    const { ingredients, setIngredients } = React.useContext(CreateRecipeIngredientsContext);
+    const { ingredients, setIngredients } = useCreateIngredientsContext();
 
     // Set default column headers and their respective attributes
     const columns = [
-        { field: 'ingredientName', headerName: 'Name', width: 500, editable: true },
+        { field: 'name', headerName: 'Name', width: 500, editable: true },
         {
             field: 'quantity',
             headerName: 'Amount',
@@ -49,7 +37,7 @@ function IngredientsTable({ width }) {
             editable: true
         },
         {
-            field: 'unitOfMeasure',
+            field: 'unit_of_measure',
             headerName: 'Measure',
             width: 90,
             editable: true,
@@ -59,19 +47,18 @@ function IngredientsTable({ width }) {
     ];
 
     // For creating new rows on table
-    const [rows, setRows] = React.useState(() => []);
     const [selectedRows, setSelectedRows] = React.useState([]);
 
     const handleAddRow = () => {
-        setRows((prevState) => [...prevState, createRow()]);
+        setIngredients((prevState) => [...prevState, createRow()]);
     };
 
     const handleDeleteRow = () => {
-        setRows((prevState) => prevState.filter((row) => !selectedRows.includes(row.id)));
+        setIngredients((prevState) => prevState.filter((row) => !selectedRows.includes(row.id)));
     };
 
     const processRowUpdate = (newRow, oldRow) => {
-        setRows((currentRows) => {
+        setIngredients((currentRows) => {
             const updatedRows = currentRows.map((row) => {
                 if (row.id === newRow.id) {
                     return newRow;
@@ -97,7 +84,7 @@ function IngredientsTable({ width }) {
                 </Button>
             </Stack>
             <DataGrid
-                rows={rows}
+                rows={ingredients}
                 columns={columns}
                 editMode="row"
                 processRowUpdate={processRowUpdate}

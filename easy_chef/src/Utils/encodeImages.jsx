@@ -21,4 +21,40 @@ const encodeImages = (event, setImageCount, setImagesEncoded) => {
     }
 };
 
+export const encodeImage = (event, setImageEncoded) => {
+    const files = Array.from(event.target.files);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        const base64String = reader.result;
+        setImageEncoded(base64String);
+    };
+    reader.readAsDataURL(files[0]);
+};
+
+export const encodeImagesFromDb = (files) => {
+    const promises = files.map(
+        (file) =>
+            new Promise((resolve, reject) => {
+                const base64String = file; // replace with your base64 string
+                const byteCharacters = atob(base64String);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                // const blob = new Blob([byteArray], { type: 'image/png' });
+                const blob = new Blob([byteArray]);
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = () => {
+                    resolve(reader.result);
+                };
+                reader.onerror = () => {
+                    reject(reader.error);
+                };
+            })
+    );
+    return Promise.all(promises);
+};
+
 export default encodeImages;

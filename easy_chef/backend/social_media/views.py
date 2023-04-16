@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from accounts.views import IsTokenValid
 from recipes.models import Rating, Recipe, Comment, CommentFile
-from social_media.serializers import RecipeSerializer
+from social_media.serializers import RecipeRatingSerializer, RecipeSerializer
 
 from rest_framework.parsers import MultiPartParser
 
@@ -287,4 +287,17 @@ class CommentFileUploadView(APIView):
         #     comment_file.save()
         #
         # # Return response
+
+
+class RetrieveRating(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, recipe_id):
+        # Get the rating for the requested recipe from the authenticated user
+        try:
+            rating = Rating.objects.get(recipe_id=recipe_id, user=request.user)
+            serializer = RecipeRatingSerializer(rating)
+            return Response(serializer.data)
+        except Rating.DoesNotExist:
+            return Response({'error': 'You have not rated this recipe.'}, status=404)
 

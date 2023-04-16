@@ -9,6 +9,16 @@ import Paper from '@mui/material/Paper';
 import * as React from 'react';
 import Grid from '@mui/material/Unstable_Grid2';
 
+function minutesToTime(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = Math.floor(minutes % 60);
+    const seconds = Math.floor((minutes * 60) % 60);
+
+    const format = (value) => (value < 10 ? `0${value}` : value);
+
+    return `${format(hours)}:${format(remainingMinutes)}:${format(seconds)}`;
+}
+
 /**
  * Given instructions prop, return a column-styled accordion of instructions
  * @param props - requires instructions prop... instructions prop is an array of JSON objects of
@@ -28,23 +38,25 @@ export default function RecipeInstructionsAccordion(props) {
                 >
                     <Accordion key={index}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography>{`Instruction #${instruction.stepNumber}`}</Typography>
+                            <Typography>{`Instruction #${instruction.step_number}`}</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                             <Typography sx={{ mb: 6 }}>{instruction.instruction}</Typography>
-                            <Typography
-                                sx={{ mb: 0.5 }}
-                                align="center"
-                            >{`Cooking Time: ${instruction.cookingTime}`}</Typography>
-                            <Typography
-                                sx={{ mb: 3 }}
-                                align="center"
-                            >{`Prep. Time: ${instruction.prepTime}`}</Typography>
-                            {instruction.instructionImages.length === 0 ? (
+                            <Typography sx={{ mb: 0.5 }} align="center">{`Cooking Time: ${
+                                typeof instruction.cooking_time === 'string'
+                                    ? instruction.cooking_time
+                                    : minutesToTime(instruction.cooking_time)
+                            }`}</Typography>
+                            <Typography sx={{ mb: 3 }} align="center">{`Prep. Time: ${
+                                typeof instruction.prep_time === 'string'
+                                    ? instruction.prep_time
+                                    : minutesToTime(instruction.prep_time)
+                            }`}</Typography>
+                            {instruction.instructionImagesEncoded.length === 0 ? (
                                 <div></div>
                             ) : (
                                 <Box display="flex" justifyContent="center" alignItems="center">
-                                    <Carousel images={instruction.instructionImages} />
+                                    <Carousel images={instruction.instructionImagesEncoded} />
                                 </Box>
                             )}
                         </AccordionDetails>

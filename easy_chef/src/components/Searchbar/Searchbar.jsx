@@ -7,9 +7,13 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import fetchBackend from '../../Utils/fetchBackend';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSearchQueryResponseContext } from '../../contexts/SearchQueryResponseContext/SearchQueryResponseContext';
 
 function Searchbar() {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
+    const { searchQueryResponse, setSearchQueryResponse } = useSearchQueryResponseContext();
 
     function handleSearch(event) {
         event.preventDefault();
@@ -19,8 +23,9 @@ function Searchbar() {
         fetchBackend
             .get(`/search/keyword?keyword=${searchQuery}`)
             .then((response) => {
-                // handle showing results... either to a new page with results or using states to show component
-                // containing results
+                const results = JSON.parse(response.data.keywordResults);
+                setSearchQueryResponse(results);
+                navigate(`/search-results/${searchQuery}`);
             })
             .catch((error) => {
                 console.log(error);

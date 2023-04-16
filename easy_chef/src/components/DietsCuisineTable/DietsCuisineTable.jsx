@@ -47,12 +47,12 @@ export default function DietsCuisineTable({ setDiets, setCuisines, width }) {
             const cuisinesArray = [];
             const updatedRows = currentRows.map((row) => {
                 if (row.id === newRow.id) {
-                    dietsArray.push(newRow.diet);
-                    cuisinesArray.push(newRow.cuisine);
+                    if (newRow.diet) dietsArray.push({ name: newRow.diet });
+                    if (newRow.cuisine) cuisinesArray.push({ name: newRow.cuisine });
                     return newRow;
                 }
-                dietsArray.push(row.diet);
-                cuisinesArray.push(row.cuisine);
+                if (row.diet) dietsArray.push({ name: row.diet });
+                if (row.cuisine) cuisinesArray.push({ name: row.cuisine });
                 return row;
             });
 
