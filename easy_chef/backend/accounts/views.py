@@ -12,6 +12,7 @@ import datetime
 from PIL import Image
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db import IntegrityError
+import base64
 
 
 class IsTokenValid(BasePermission):
@@ -200,7 +201,6 @@ class EditAvatar(APIView):
         # Return a response indicating success
         return Response({"message": "Avatar updated successfully."})
 
-
 class GetUserInfo(APIView):
     permission_classes = [IsAuthenticated, IsTokenValid]
 
@@ -219,5 +219,13 @@ class GetUserInfo(APIView):
             errors["user_id"] = "This user does not exist"
             return Response(errors, status=400)
 
+        avatar_img = None
+        if user.avatar_img:
+            with open(user.avatar_img.path, 'rb') as f:
+                image_data = f.read()
+                avatar_img = base64.b64encode(image_data).decode('utf-8')
+
         user_serializer = MyUserSerializer(user)
-        return Response(user_serializer.data)
+        user_data = user_serializer.data
+        user_data['avatar_img'] = avatar_img
+        return Response(user_data)

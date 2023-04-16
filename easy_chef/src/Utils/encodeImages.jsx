@@ -21,68 +21,15 @@ const encodeImages = (event, setImageCount, setImagesEncoded) => {
     }
 };
 
-// export const encodeImagesFromDb = (files, setImagesEncoded) => {
-//     const encodedImages = [];
-//     for (let file of files) {
-//         const base64String = file; // replace with your base64 string
-//         const byteCharacters = atob(base64String);
-//         const byteNumbers = new Array(byteCharacters.length);
-//         for (let i = 0; i < byteCharacters.length; i++) {
-//             byteNumbers[i] = byteCharacters.charCodeAt(i);
-//         }
-//         const byteArray = new Uint8Array(byteNumbers);
-//         // const blob = new Blob([byteArray], { type: 'image/png' });
-//         const blob = new Blob([byteArray]);
-//         const reader = new FileReader();
-//         reader.readAsDataURL(blob);
-//         reader.onloadend = () => {
-//             encodedImages.push(reader.result);
-//             if (setImagesEncoded !== null) setImagesEncoded(encodedImages);
-//         };
-//     }
-// };
-
-// export const encodeImagesFromDb = (files, setImagesEncoded) => {
-//     const encodedImages = [];
-//     const promises = [];
-//
-//     for (let file of files) {
-//         const base64String = file; // replace with your base64 string
-//         const byteCharacters = atob(base64String);
-//         const byteNumbers = new Array(byteCharacters.length);
-//
-//         for (let i = 0; i < byteCharacters.length; i++) {
-//             byteNumbers[i] = byteCharacters.charCodeAt(i);
-//         }
-//
-//         const byteArray = new Uint8Array(byteNumbers);
-//         const blob = new Blob([byteArray]);
-//         const reader = new FileReader();
-//
-//         promises.push(
-//             new Promise((resolve, reject) => {
-//                 reader.readAsDataURL(blob);
-//
-//                 reader.onloadend = () => {
-//                     encodedImages.push(reader.result);
-//                     resolve();
-//                 };
-//
-//                 reader.onerror = () => {
-//                     reject(new Error('Failed to load image'));
-//                 };
-//             })
-//         );
-//     }
-//
-//     Promise.all(promises)
-//         .then(() => {
-//             if (setImagesEncoded !== null) setImagesEncoded(encodedImages);
-//         })
-//         .catch((error) => {
-//             console.error(error);
-//         });
-// };
+export const encodeImage = (event, setImageEncoded) => {
+    const files = Array.from(event.target.files);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        const base64String = reader.result;
+        setImageEncoded(base64String);
+    };
+    reader.readAsDataURL(files[0]);
+};
 
 export const encodeImagesFromDb = (files) => {
     const promises = files.map(

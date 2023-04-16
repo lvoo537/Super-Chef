@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from accounts.views import IsTokenValid
 from recipes.models import Rating, Recipe, Comment, CommentFile
-from social_media.serializers import RecipeRatingSerializer, RecipeSerializer
+from social_media.serializers import RecipeRatingSerializer, RecipeSerializer, RateRecipeSerializer
 
 from rest_framework.parsers import MultiPartParser
 
@@ -165,7 +165,6 @@ class MyRecipeView(APIView):
         if recipes_created_serializer.data:
             my_recipes['interacted'].extend(recipes_created_serializer.data)
 
-
         lst = []
         for something in my_recipes['interacted']:
             lst.append(something['id'])
@@ -189,7 +188,6 @@ class MyRecipeView(APIView):
                     my_recipes['interacted'].append(data)
                     lst.append(data['id'])
 
-
         # commented
         user_comments = Comment.objects.filter(user=request.user)
         recipes_commented_on_by_user = Recipe.objects.filter(comments__in=user_comments)
@@ -201,7 +199,6 @@ class MyRecipeView(APIView):
                      my_recipes['interacted'].append(data)
                      lst.append(data['id'])
 
-
         return Response({'my_recipes': my_recipes}, status=status.HTTP_200_OK)
 
 
@@ -211,11 +208,9 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
-
 class PopularRecipeView(ListAPIView):
-    serializer_class = RecipeSerializer
+    serializer_class = RateRecipeSerializer
     pagination_class = StandardResultsSetPagination
-
 
     def get_queryset(self):
         favourited = self.request.GET.get('favorites', '').lower() == 'true'
@@ -270,8 +265,6 @@ class CommentFileUploadView(APIView):
                 file_list = file_dict.getlist(file_key)
                 for file in file_list:
                     name = file.name
-                    # if not file.name.endswith(('.jpg', '.png', '.mp4')):
-                    #     return Response({'message': 'File must be an image or video'}, status=status.HTTP_400_BAD_REQUEST)
 
                     # print(5)
                     recipe_file = CommentFile.objects.create(name=name, comment=comment, file=file)
@@ -281,9 +274,6 @@ class CommentFileUploadView(APIView):
         # Return response
         response_data = {'Success message': 'Uploaded the files successfully.'}
         return Response(response_data, status=status.HTTP_201_CREATED)
-
-
-
 
         #
         # files = request.FILES.getlist('file')

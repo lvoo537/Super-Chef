@@ -2,7 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useRecipeContext } from '../../contexts/RecipeContext/RecipeContext';
 import { useEffect, useState } from 'react';
 import * as React from 'react';
-import fetchBackend from '../../Utils/fetchBackend';
+import fetchBackend, { fetchBackendImg } from '../../Utils/fetchBackend';
 import encodeImages, { encodeImagesFromDb } from '../../Utils/encodeImages';
 import { Box, CircularProgress, Grid, TextField, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar/Navbar';
@@ -53,7 +53,7 @@ function EditRecipe() {
     const [imagesEncoded, setImagesEncoded] = useState([]);
     // array of instruction objects
     const [instructions, setInstructions] = useState([]);
-    const [instrImagesEncoded, setInstrImagesEncoded] = useState('');
+    const [instrImagesEncoded, setInstrImagesEncoded] = useState([]);
     const [instrImagesLoaded, setInstrImagesLoaded] = useState(false);
 
     // array of strings denoting diet names
@@ -66,8 +66,8 @@ function EditRecipe() {
     const [defaultCuisineRow, setDefaultCuisineRow] = React.useState([]);
 
     const [recipeName, setRecipeName] = React.useState('');
-    const [cookingTime, setCookingTime] = React.useState(0);
-    const [prepTime, setPrepTime] = React.useState(0);
+    const [cookingTime, setCookingTime] = React.useState(undefined);
+    const [prepTime, setPrepTime] = React.useState(undefined);
     const [owner, setOwner] = React.useState('');
     // const [baseRecipe, setBaseRecipe] = React.useState('');
 
@@ -77,9 +77,9 @@ function EditRecipe() {
     const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
     const { data, error } = useSWR(getRecipeDetailsUrl, fetcher);
 
-    function timeStringToSeconds(timeString) {
+    function timeStringToMintutes(timeString) {
         const [hours, minutes, seconds] = timeString.split(':').map(Number);
-        return hours * 3600 + minutes * 60 + seconds;
+        return parseInt(hours * 60 + minutes + seconds / 60);
     }
 
     let ingredientIdCounter = 0;
@@ -97,44 +97,50 @@ function EditRecipe() {
                     };
                 })
             );
-            // TODO: Get images related to recipeId
             fetchBackend
                 .get(`/recipes/${data.id}/retrieve-recipe-files`)
-                .then((res) => {
+                .then(async (res) => {
                     // console.log(res.data);
                     console.log('Successfully retrieved recipe images');
-                    encodeImagesFromDb(res.data.files, setImagesEncoded);
+                    const encodedImages = await encodeImagesFromDb(res.data.files);
+                    setImagesEncoded(encodedImages);
                 })
                 .catch((err) => {
                     console.log(err);
                 });
-            // setImagesEncoded([]);
             const instructionsResponse = data.instructions;
 
-            for (let i = 0; i < instructionsResponse.length; i++) {
-                const instr = instructionsResponse[i];
-                fetchBackend
-                    .get(`/recipes/${instr.id}/retrieve-instruction-files`)
-                    .then((res) => {
-                        console.log(`Successfully retrieved instruction images for ${instr.id}`);
-                        encodeImagesFromDb(res.data.files, setInstrImagesEncoded);
-                        instr.instructionImagesEncoded = instrImagesEncoded;
-                        if (i === instructionsResponse.length - 1) {
-                            setInstructions(instructionsResponse);
-                            setInstrImagesLoaded(true);
-                        }
-                    })
-                    .catch((err) => {
+            if (instructionsResponse.length === 0) setInstrImagesLoaded(true);
+
+            Promise.all(
+                instructionsResponse.map(async (instr) => {
+                    try {
+                        const res = await fetchBackend.get(
+                            `/recipes/${instr.id}/retrieve-instruction-files`
+                        );
+                        const encodedImages = await encodeImagesFromDb(res.data.files);
+                        instr.instructionImagesEncoded = encodedImages;
+                        return encodedImages;
+                    } catch (err) {
                         console.log(err);
-                    });
-            }
+                        return [];
+                    }
+                })
+            ).then((encodedImagesArray) => {
+                const imagesEncoded = encodedImagesArray.flat();
+                setInstructions(instructionsResponse);
+                setInstrImagesEncoded(imagesEncoded);
+                console.log(instructions);
+                setInstrImagesLoaded(true);
+            });
+
             setDefaultDietRow(data.diets.map((diet) => createDefaultSingleRow('Diets', diet.name)));
             setDefaultCuisineRow(
                 data.cuisines.map((cuisine) => createDefaultSingleRow('Cuisines', cuisine.name))
             );
             setRecipeName(data.name);
-            setCookingTime(timeStringToSeconds(data.cooking_time));
-            setPrepTime(timeStringToSeconds(data.prep_time));
+            setCookingTime(timeStringToMintutes(data.cooking_time));
+            setPrepTime(timeStringToMintutes(data.prep_time));
             setOwner(data.owner);
             // const baseRecipeId = data.base_recipe === null ? '' : data.base_recipe;
             // if (baseRecipeId === '') setBaseRecipe('');
@@ -172,12 +178,6 @@ function EditRecipe() {
                 <Grid item xs={12}>
                     <Box sx={{ mt: 8 }}>
                         <Typography variant="h5">Failed to get recipe details...</Typography>
-                        <Typography variant="body1" sx={{ mt: 2, color: 'red' }}>
-                            {`Error Message: ${error.response.statusText}`}
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: 'red' }}>
-                            {`Error Status Code: ${error.response.status}`}
-                        </Typography>
                     </Box>
                 </Grid>
             </Grid>
@@ -194,25 +194,64 @@ function EditRecipe() {
             name: data.get('recipe-name'),
             // base_recipe: data.get('base-recipe'),
             ingredients: ingredients,
-            instructions: instructions,
             cuisine: cuisines,
             diets: diets,
             owner
         };
-        if (data.get('cooking-time') !== '') {
-            dataToSend.cooking_time = parseInt(data.get('cooking-time'));
+        const instrReq = [];
+        for (let instr of instructions) {
+            instrReq.push({
+                cooking_time: instr.cooking_time,
+                instruction: instr.instruction,
+                prep_time: instr.prep_time,
+                step_number: instr.step_number
+            });
         }
-        if (data.get('prep-time') !== '') {
-            dataToSend.prep_time = parseInt(data.get('prep-time'));
+        dataToSend.instructions = instrReq;
+        if (cookingTime !== '') {
+            dataToSend.cooking_time = cookingTime;
         }
-
-        console.log(dataToSend);
+        if (prepTime !== '') {
+            dataToSend.prep_time = prepTime;
+        }
 
         fetchBackend
             .post(`/recipes/${fromCard ? recipeId : recipeIdPath}/update-recipe/`, dataToSend)
             .then((response) => {
                 console.log('Successfully edited recipe');
-                navigate('/');
+                fetchBackend
+                    .get(`/recipes/recipe-details/${fromCard ? recipeId : recipeIdPath}/`)
+                    .then((response) => {
+                        console.log('Successfully retrieved recipe details');
+                        const detailsInstructions = response.data.instructions;
+                        for (let instr of detailsInstructions) {
+                            for (let instruction of instructions) {
+                                if (instruction.step_number === instr.step_number) {
+                                    const formData = new FormData();
+                                    if (instruction.instructionImages) {
+                                        instruction.instructionImages.map((image, index) => {
+                                            formData.append('file' + index, image);
+                                        });
+                                    }
+                                    fetchBackendImg
+                                        .post(`/recipes/${instr.id}/upload-instruction/`, formData)
+                                        .then((response) => {
+                                            console.log(
+                                                `Successfully uploaded instruction id: ${instr.id}`
+                                            );
+                                            navigate('/');
+                                        })
+                                        .catch((error) => {
+                                            console.log(error);
+                                        });
+                                    break;
+                                }
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
             })
             .catch((error) => {
                 console.log(error);
@@ -269,10 +308,30 @@ function EditRecipe() {
                                 variant="outlined"
                                 type="number"
                                 focused
+                                error={formError.errorOccurred}
+                                helperText={formError.errorMsg}
                                 InputProps={{ inputProps: { min: 0 } }}
                                 value={cookingTime}
                                 onChange={(event) => {
-                                    setCookingTime(parseInt(event.target.value));
+                                    const inputVal = parseInt(event.target.value, 10);
+                                    const maxCookingTime = 24 * 60;
+
+                                    if (
+                                        !isNaN(inputVal) &&
+                                        inputVal >= 0 &&
+                                        inputVal <= maxCookingTime
+                                    ) {
+                                        setCookingTime(inputVal);
+                                        setFormError({
+                                            errorOccurred: false,
+                                            errorMsg: ''
+                                        });
+                                    } else {
+                                        setFormError({
+                                            errorOccurred: true,
+                                            errorMsg: `Time must be between 0 and ${maxCookingTime}`
+                                        });
+                                    }
                                 }}
                             />
                         </Grid>
@@ -284,10 +343,30 @@ function EditRecipe() {
                                 variant="outlined"
                                 type="number"
                                 focused
+                                error={formError.errorOccurred}
+                                helperText={formError.errorMsg}
                                 InputProps={{ inputProps: { min: 0 } }}
                                 value={prepTime}
                                 onChange={(event) => {
-                                    setPrepTime(parseInt(event.target.value));
+                                    const inputVal = parseInt(event.target.value, 10);
+                                    const maxPrepTime = 24 * 60;
+
+                                    if (
+                                        !isNaN(inputVal) &&
+                                        inputVal >= 0 &&
+                                        inputVal <= maxPrepTime
+                                    ) {
+                                        setPrepTime(inputVal);
+                                        setFormError({
+                                            errorOccurred: false,
+                                            errorMsg: ''
+                                        });
+                                    } else {
+                                        setFormError({
+                                            errorOccurred: true,
+                                            errorMsg: `Time must be between 0 and ${maxPrepTime}`
+                                        });
+                                    }
                                 }}
                             />
                         </Grid>

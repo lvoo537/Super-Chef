@@ -54,6 +54,7 @@ function RegisterPage() {
         fetchBackend
             .post('/accounts/register/', dataToSend)
             .then((response) => {
+                // setAuthenticated(true);
                 // assuming uid is returned from data
                 // setUid(response.data);
                 navigate('/');

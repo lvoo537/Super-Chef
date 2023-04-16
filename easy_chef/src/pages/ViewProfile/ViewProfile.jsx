@@ -5,10 +5,13 @@ import TextField from '@mui/material/TextField';
 import { Typography } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import * as React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import fetchBackend from '../../Utils/fetchBackend';
+import useSWR from 'swr';
+import { encodeImagesFromDb } from '../../Utils/encodeImages';
 
 function ViewProfile() {
-    const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [dob, setDob] = useState('');
@@ -16,6 +19,44 @@ function ViewProfile() {
     const [bio, setBio] = useState('');
     const [location, setLocation] = useState('');
     const [email, setEmail] = useState('');
+    const [avatar, setAvatar] = useState('');
+
+    const getProfileUrl = `http://localhost:8000/accounts/get-user-info/`;
+    const fetcher = (url) => fetchBackend.get(url).then((res) => res.data);
+    const { data, error } = useSWR(getProfileUrl, fetcher);
+
+    useEffect(() => {
+        if (data) {
+            if (data.avatar_img) {
+                encodeImagesFromDb([data.avatar_img]).then((encodedAvatar) => {
+                    setAvatar(encodedAvatar);
+                });
+            } else {
+                setAvatar('');
+            }
+            setBio(data.bio !== null ? data.bio : '');
+            setDob(data.date_of_birth);
+            setEmail(data.email);
+            setFirstName(data.first_name);
+            setLastName(data.last_name);
+            setLocation(data.location !== null ? data.location : '');
+            setPhone(data.phone);
+            setUsername(data.username);
+        }
+    }, [data]);
+
+    if (error) {
+        return (
+            <div>
+                <Navbar />
+                <Grid container spacing={2} paddingX="20%" marginTop={5}>
+                    <Grid item xs={12}>
+                        <Typography variant="h5">Failed to fetch user data.</Typography>
+                    </Grid>
+                </Grid>
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -24,6 +65,16 @@ function ViewProfile() {
                 <Grid item xs={12}>
                     <Box component="form">
                         <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <TextField
+                                    id="username"
+                                    label="Username"
+                                    variant="outlined"
+                                    value={username}
+                                    disabled
+                                    sx={{ paddingRight: '1vw' }}
+                                />
+                            </Grid>
                             <Grid item xs={12}>
                                 <TextField
                                     id="first-name"
@@ -91,7 +142,7 @@ function ViewProfile() {
                                     <Avatar
                                         sx={{ width: 200, height: 200, justifySelf: 'center' }}
                                         alt="Name"
-                                        src="/static/images/avatar/2.jpg"
+                                        src={avatar}
                                     />
                                 </Box>
                             </Grid>
